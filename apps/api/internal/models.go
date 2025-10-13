@@ -1,0 +1,24 @@
+package internal
+
+import "time"
+
+type User struct {
+	ID        uint   `gorm:"primaryKey"`
+	Email     string `gorm:"uniqueIndex"`
+	PassHash  string
+	Plan      string // "free" | "pro"
+	CreatedAt time.Time
+}
+
+type Essay struct {
+	ID        uint   `gorm:"primaryKey"`
+	UserID    *uint  `gorm:"index"`
+	TaskType  string // "task1"|"task2"
+	Text      string `gorm:"type:MEDIUMTEXT"`
+	BandsJSON string // raw JSON: {"ta":7,"cc":6.5,"lr":7,"gra":7.5,"overall":7}
+	Overall   float32
+	CEFR      string
+	Feedback  string `gorm:"type:MEDIUMTEXT"`
+	PublicID  string `gorm:"uniqueIndex"`
+	CreatedAt time.Time
+}

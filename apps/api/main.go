@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/boby/ielts-band-estimator/api/internal"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -11,6 +12,23 @@ import (
 func main() {
 	// Load environment variables
 	_ = godotenv.Load()
+
+	// Connect to database
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		log.Println("Warning: DB_DSN not set, using in-memory mode")
+	} else {
+		db, err := internal.OpenDB(dsn)
+		if err != nil {
+			log.Printf("Database connection failed: %v (continuing without DB)", err)
+		} else {
+			if err := internal.AutoMigrate(db); err != nil {
+				log.Printf("Database migration failed: %v", err)
+			} else {
+				log.Println("Database connected and migrated successfully")
+			}
+		}
+	}
 
 	// Initialize Gin router
 	r := gin.Default()
