@@ -50,6 +50,10 @@ func main() {
 		
 		// Essay analysis
 		api.POST("/essays/analyze", internal.AnalyzeEssay(db))
+		
+		// Reports
+		api.GET("/reports/:publicId/pdf", internal.ReportPDF(db))
+		api.GET("/reports/:publicId", internal.GetReport(db))
 	}
 
 	// Get port from environment or default to 8080

@@ -1,10 +1,19 @@
 import { useLocation, useParams } from "react-router-dom"
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts"
 
 export default function Result() {
   const { state } = useLocation() as any
   const { id } = useParams()
   const data = state || {}
   const bands = data.bands || { ta: 7, cc: 6.5, lr: 7, gra: 7 }
+
+  // Prepare chart data
+  const chartData = [
+    { category: "TA", score: bands.ta, fullMark: 9 },
+    { category: "CC", score: bands.cc, fullMark: 9 },
+    { category: "LR", score: bands.lr, fullMark: 9 },
+    { category: "GRA", score: bands.gra, fullMark: 9 },
+  ]
 
   async function downloadPDF() {
     try {
@@ -55,7 +64,7 @@ export default function Result() {
           </div>
 
           {/* Individual Bands */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="text-center p-3 bg-slate-50 rounded-lg">
               <div className="text-xs text-slate-500 mb-1">Task Achievement</div>
               <div className="text-2xl font-semibold text-slate-900">{bands.ta}</div>
@@ -72,6 +81,25 @@ export default function Result() {
               <div className="text-xs text-slate-500 mb-1">Grammar Range & Accuracy</div>
               <div className="text-2xl font-semibold text-slate-900">{bands.gra}</div>
             </div>
+          </div>
+
+          {/* Radar Chart */}
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={chartData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="category" />
+                <PolarRadiusAxis domain={[0, 9]} tick={false} />
+                <Radar
+                  name="Band Score"
+                  dataKey="score"
+                  stroke="#3a7afe"
+                  fill="#3a7afe"
+                  fillOpacity={0.2}
+                  strokeWidth={2}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
