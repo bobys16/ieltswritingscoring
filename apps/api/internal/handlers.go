@@ -1,7 +1,10 @@
 package internal
 
 import (
+	"context"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,14 +19,14 @@ type AnalyzeRequest struct {
 
 type AnalyzeResponse struct {
 	PublicID  string             `json:"publicId"`
-	Overall   float64            `json:"overall"`
-	Bands     map[string]float64 `json:"bands"`
+	Overall   float32            `json:"overall"`
+	Bands     map[string]float32 `json:"bands"`
 	CEFR      string             `json:"cefr"`
 	Feedback  string             `json:"feedback"`
-	CreatedAt string             `json:"createdAt"`
+	CreatedAt time.Time          `json:"createdAt"`
 }
 
-// AnalyzeEssay handles essay analysis requests (stub implementation)
+// AnalyzeEssay handles essay analysis requests with real AI scoring
 func AnalyzeEssay(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req AnalyzeRequest
@@ -37,51 +40,66 @@ func AnalyzeEssay(db *gorm.DB) gin.HandlerFunc {
 			req.TaskType = "task2" // default
 		}
 
-		// Basic word count validation
-		words := len([]rune(req.Text)) / 5 // rough estimate
-		if words < 150 || words > 320 {
+		// Validate word count
+		if !MinWordsOK(req.Text) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "essay must be 150-320 words"})
 			return
 		}
 
-		// Generate stub response (will be replaced with real AI scoring)
-		publicID := uuid.NewString()[:8]
-		
-		// Stub bands - will be replaced with real AI analysis
-		stubBands := map[string]float64{
-			"ta":  7.0,
-			"cc":  6.5,
-			"lr":  7.0,
-			"gra": 7.5,
+		// Get OpenAI API key
+		apiKey := os.Getenv("AI_KEY")
+		if apiKey == "" {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "AI service not configured"})
+			return
 		}
-		
-		overall := 7.0
-		cefr := "B2"
-		feedback := "This is a stub response. Your essay demonstrates good task response with clear main ideas. Work on improving coherence with better linking devices and paragraph structure. Vocabulary is appropriate but could be more varied. Grammar shows good range with minor errors."
+
+		// Create context with timeout
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+		defer cancel()
+
+		// Score essay with AI (with fallback if OpenAI unavailable)
+		scoreResult, err := ScoreEssay(ctx, apiKey, req.TaskType, req.Prompt, req.Text)
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"error": "AI scoring failed"})
+			return
+		}
+
+		// Generate public ID
+		publicID := uuid.NewString()[:8]
+
+		// Create bands map for response
+		bands := map[string]float32{
+			"ta":  scoreResult.TA,
+			"cc":  scoreResult.CC,
+			"lr":  scoreResult.LR,
+			"gra": scoreResult.GRA,
+		}
 
 		// Save to database if available
+		createdAt := time.Now()
 		if db != nil {
 			essay := Essay{
-				TaskType: req.TaskType,
-				Text:     req.Text,
-				BandsJSON: ToJSON(stubBands),
-				Overall:  float32(overall),
-				CEFR:     cefr,
-				Feedback: feedback,
-				PublicID: publicID,
+				TaskType:  req.TaskType,
+				Text:      req.Text,
+				BandsJSON: ToJSON(scoreResult),
+				Overall:   scoreResult.Overall,
+				CEFR:      scoreResult.CEFR,
+				Feedback:  scoreResult.Feedback,
+				PublicID:  publicID,
+				CreatedAt: createdAt,
 			}
-			
+
 			// Try to save, but don't fail if DB is unavailable
 			_ = db.Create(&essay)
 		}
 
 		response := AnalyzeResponse{
 			PublicID:  publicID,
-			Overall:   overall,
-			Bands:     stubBands,
-			CEFR:      cefr,
-			Feedback:  feedback,
-			CreatedAt: "2025-10-14T00:00:00Z",
+			Overall:   scoreResult.Overall,
+			Bands:     bands,
+			CEFR:      scoreResult.CEFR,
+			Feedback:  scoreResult.Feedback,
+			CreatedAt: createdAt,
 		}
 
 		c.JSON(http.StatusOK, response)
