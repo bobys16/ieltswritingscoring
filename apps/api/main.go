@@ -47,10 +47,10 @@ func main() {
 		// Auth routes
 		api.POST("/auth/signup", internal.Signup(db))
 		api.POST("/auth/login", internal.Login(db))
-		
+
 		// Essay analysis
 		api.POST("/essays/analyze", internal.AnalyzeEssay(db))
-		
+
 		// Reports
 		api.GET("/reports/:publicId/pdf", internal.ReportPDF(db))
 		api.GET("/reports/:publicId", internal.GetReport(db))

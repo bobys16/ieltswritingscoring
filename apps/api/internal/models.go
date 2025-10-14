@@ -14,11 +14,11 @@ type Essay struct {
 	ID        uint   `gorm:"primaryKey"`
 	UserID    *uint  `gorm:"index"`
 	TaskType  string // "task1"|"task2"
-	Text      string `gorm:"type:MEDIUMTEXT"`
+	Text      string `gorm:"type:TEXT"`
 	BandsJSON string // raw JSON: {"ta":7,"cc":6.5,"lr":7,"gra":7.5,"overall":7}
 	Overall   float32
 	CEFR      string
-	Feedback  string `gorm:"type:MEDIUMTEXT"`
+	Feedback  string `gorm:"type:TEXT"`
 	PublicID  string `gorm:"uniqueIndex"`
 	CreatedAt time.Time
 }

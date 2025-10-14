@@ -14,7 +14,7 @@ import (
 func ReportPDF(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		publicId := c.Param("publicId")
-		
+
 		if db == nil {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "database not available"})
 			return
@@ -110,7 +110,7 @@ func ReportPDF(db *gorm.DB) gin.HandlerFunc {
 		// Task Type
 		pdf.SetFont("Arial", "", 10)
 		pdf.SetTextColor(100, 100, 100)
-		pdf.Cell(0, 6, fmt.Sprintf("Task Type: %s | Generated: %s", 
+		pdf.Cell(0, 6, fmt.Sprintf("Task Type: %s | Generated: %s",
 			essay.TaskType, essay.CreatedAt.Format("2006-01-02 15:04")))
 		pdf.Ln(10)
 
@@ -120,7 +120,7 @@ func ReportPDF(db *gorm.DB) gin.HandlerFunc {
 			pdf.SetTextColor(0, 0, 0)
 			pdf.Cell(0, 8, "Share this report:")
 			pdf.Ln(10)
-			
+
 			// We'll add a simple text URL instead of embedding QR image for simplicity
 			pdf.SetFont("Arial", "", 10)
 			pdf.SetTextColor(58, 122, 254)
@@ -137,7 +137,7 @@ func ReportPDF(db *gorm.DB) gin.HandlerFunc {
 		// Set headers and output PDF
 		c.Header("Content-Type", "application/pdf")
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=ielts-report-%s.pdf", essay.PublicID))
-		
+
 		if err := pdf.Output(c.Writer); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "PDF generation failed"})
 			return
@@ -149,7 +149,7 @@ func ReportPDF(db *gorm.DB) gin.HandlerFunc {
 func GetReport(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		publicId := c.Param("publicId")
-		
+
 		if db == nil {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "database not available"})
 			return
@@ -166,11 +166,11 @@ func GetReport(db *gorm.DB) gin.HandlerFunc {
 		if err := FromJSON(essay.BandsJSON, &scoreResult); err != nil {
 			// Return basic info if parsing fails
 			c.JSON(http.StatusOK, gin.H{
-				"publicId": essay.PublicID,
-				"overall":  essay.Overall,
-				"cefr":     essay.CEFR,
-				"feedback": essay.Feedback,
-				"taskType": essay.TaskType,
+				"publicId":  essay.PublicID,
+				"overall":   essay.Overall,
+				"cefr":      essay.CEFR,
+				"feedback":  essay.Feedback,
+				"taskType":  essay.TaskType,
 				"createdAt": essay.CreatedAt,
 			})
 			return
