@@ -1,106 +1,194 @@
-import { useState } from "react"
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) return
-
     setLoading(true)
+    setError('')
+
     try {
-      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup"
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ email, password })
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup'
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       })
-      
-      const data = await res.json()
-      
-      if (res.ok) {
-        if (isLogin && data.token) {
-          localStorage.setItem("token", data.token)
-          alert("Login successful!")
+
+      const data = await response.json()
+
+      if (response.ok) {
+        if (isLogin) {
+          // Store token and redirect to dashboard
+          localStorage.setItem('token', data.token)
+          navigate('/dashboard')
         } else {
-          alert("Account created! Please login.")
+          // Show success message and switch to login
           setIsLogin(true)
+          setError('')
+          alert('Account created successfully! Please log in.')
         }
       } else {
-        alert(data.error || "Authentication failed")
+        setError(data.error || 'Authentication failed')
       }
     } catch (err) {
-      alert("Network error. Please try again.")
+      setError('Network error. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <section className="container py-10 max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-semibold mb-3">
-          {isLogin ? "Welcome Back" : "Create Account"}
-        </h1>
-        <p className="text-slate-600">
-          {isLogin ? "Sign in to access your essay history" : "Sign up to save your analysis results"}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-slate-800 mb-2">
+              {isLogin ? 'Welcome Back' : 'Create Account'}
+            </h1>
+            <p className="text-slate-600">
+              {isLogin 
+                ? 'Sign in to access your essay history and dashboard' 
+                : 'Join thousands improving their IELTS scores'
+              }
+            </p>
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
-            Email Address
-          </label>
-          <input 
-            type="email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none"
-            placeholder="your@email.com"
-            required
-          />
+          {/* Toggle */}
+          <div className="flex bg-slate-100 rounded-lg p-1 mb-6">
+            <button
+              type="button"
+              onClick={() => setIsLogin(true)}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                isLogin
+                  ? 'bg-white text-brand shadow-sm'
+                  : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLogin(false)}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                !isLogin
+                  ? 'bg-white text-brand shadow-sm'
+                  : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none transition-colors"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none transition-colors"
+                placeholder="Enter your password"
+              />
+              {!isLogin && (
+                <p className="text-xs text-slate-500 mt-1">
+                  Minimum 6 characters required
+                </p>
+              )}
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-4 py-3 bg-gradient-to-r from-brand to-blue-600 text-white font-semibold rounded-lg hover:from-brand/90 hover:to-blue-600/90 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {isLogin ? 'Signing In...' : 'Creating Account...'}
+                </span>
+              ) : (
+                isLogin ? 'Sign In' : 'Create Account'
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-slate-600">
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-brand hover:text-brand/80 font-medium"
+              >
+                {isLogin ? 'Sign up' : 'Sign in'}
+              </button>
+            </p>
+          </div>
+
+          {/* Benefits for signup */}
+          {!isLogin && (
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-slate-800 mb-2">Free Account Benefits:</h4>
+              <ul className="text-sm text-slate-600 space-y-1">
+                <li className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-brand rounded-full"></div>
+                  Save your essay history
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-brand rounded-full"></div>
+                  Track score improvements
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-brand rounded-full"></div>
+                  10 analyses per hour (vs 3 for anonymous)
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
-            Password
-          </label>
-          <input 
-            type="password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none"
-            placeholder="••••••••"
-            required
-          />
-        </div>
-
-        <button 
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-3 rounded-lg bg-brand text-white font-medium hover:bg-brand/90 disabled:bg-slate-300 disabled:cursor-not-allowed transition"
-        >
-          {loading ? "Please wait..." : (isLogin ? "Sign In" : "Create Account")}
-        </button>
-      </form>
-
-      <div className="mt-6 text-center">
-        <button 
-          onClick={() => setIsLogin(!isLogin)}
-          className="text-brand hover:text-brand/80 font-medium"
-        >
-          {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
-        </button>
       </div>
-
-      <div className="mt-8 p-4 bg-slate-50 rounded-lg text-sm text-slate-600">
-        <strong>Note:</strong> Authentication requires a database connection. 
-        Currently running in demo mode.
-      </div>
-    </section>
+    </div>
   )
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -26,8 +27,8 @@ type AnalyzeResponse struct {
 	CreatedAt time.Time          `json:"createdAt"`
 }
 
-// AnalyzeEssay handles essay analysis requests with real AI scoring
-func AnalyzeEssay(db *gorm.DB) gin.HandlerFunc {
+// AnalyzeEssay handles essay analysis requests with real AI scoring, caching, and user association
+func AnalyzeEssay(db *gorm.DB, rdb *redis.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req AnalyzeRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -46,22 +47,42 @@ func AnalyzeEssay(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Get OpenAI API key
-		apiKey := os.Getenv("AI_KEY")
-		if apiKey == "" {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "AI service not configured"})
-			return
+		// Get user ID if authenticated (optional)
+		var userID *uint
+		if uid, exists := c.Get("userID"); exists {
+			id := uid.(uint)
+			userID = &id
 		}
 
-		// Create context with timeout
-		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
-		defer cancel()
+		// Check cache first
+		cached, err := GetCachedEssayAnalysis(rdb, req.Text, req.TaskType)
+		var out ScoreOut
+		
+		if err == nil && cached != nil {
+			// Use cached result
+			out = *cached
+		} else {
+			// Get OpenAI API key
+			apiKey := os.Getenv("AI_KEY")
+			if apiKey == "" {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"error": "AI service not configured"})
+				return
+			}
 
-		// Score essay with AI (with fallback if OpenAI unavailable)
-		scoreResult, err := ScoreEssay(ctx, apiKey, req.TaskType, req.Prompt, req.Text)
-		if err != nil {
-			c.JSON(http.StatusBadGateway, gin.H{"error": "AI scoring failed"})
-			return
+			// Create context with timeout
+			ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+			defer cancel()
+
+			// Score essay with AI
+			scoreResult, err := ScoreEssay(ctx, apiKey, req.TaskType, req.Prompt, req.Text)
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "AI scoring failed"})
+				return
+			}
+			out = scoreResult
+
+			// Cache the result
+			_ = CacheEssayAnalysis(rdb, req.Text, req.TaskType, out)
 		}
 
 		// Generate public ID
@@ -69,36 +90,38 @@ func AnalyzeEssay(db *gorm.DB) gin.HandlerFunc {
 
 		// Create bands map for response
 		bands := map[string]float32{
-			"ta":  scoreResult.TA,
-			"cc":  scoreResult.CC,
-			"lr":  scoreResult.LR,
-			"gra": scoreResult.GRA,
+			"ta":  out.TA,
+			"cc":  out.CC,
+			"lr":  out.LR,
+			"gra": out.GRA,
 		}
 
-		// Save to database if available
+		// Save to database
 		createdAt := time.Now()
-		if db != nil {
-			essay := Essay{
-				TaskType:  req.TaskType,
-				Text:      req.Text,
-				BandsJSON: ToJSON(scoreResult),
-				Overall:   scoreResult.Overall,
-				CEFR:      scoreResult.CEFR,
-				Feedback:  scoreResult.Feedback,
-				PublicID:  publicID,
-				CreatedAt: createdAt,
-			}
-
-			// Try to save, but don't fail if DB is unavailable
-			_ = db.Create(&essay)
+		essay := Essay{
+			UserID:    userID, // Will be nil for anonymous users
+			TaskType:  req.TaskType,
+			Text:      req.Text,
+			BandsJSON: ToJSON(out),
+			Overall:   out.Overall,
+			CEFR:      out.CEFR,
+			Feedback:  out.Feedback,
+			PublicID:  publicID,
+			CreatedAt: createdAt,
 		}
 
+		if err := db.Create(&essay).Error; err != nil {
+			// Log error but don't fail the request
+			c.Header("X-Warning", "Essay saved to session only")
+		}
+
+		// Return response
 		response := AnalyzeResponse{
 			PublicID:  publicID,
-			Overall:   scoreResult.Overall,
+			Overall:   out.Overall,
 			Bands:     bands,
-			CEFR:      scoreResult.CEFR,
-			Feedback:  scoreResult.Feedback,
+			CEFR:      out.CEFR,
+			Feedback:  out.Feedback,
 			CreatedAt: createdAt,
 		}
 

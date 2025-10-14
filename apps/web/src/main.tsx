@@ -8,6 +8,7 @@ const Home = React.lazy(() => import("./pages/Home"))
 const Analyze = React.lazy(() => import("./pages/Analyze"))
 const Result = React.lazy(() => import("./pages/Result"))
 const Login = React.lazy(() => import("./pages/Login"))
+const Dashboard = React.lazy(() => import("./pages/Dashboard"))
 const ReportPublic = React.lazy(() => import("./pages/ReportPublic"))
 
 const router = createBrowserRouter([
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
       { path: "/result/:id", element: <React.Suspense fallback={<div>Loading...</div>}><Result/></React.Suspense> },
       { path: "/r/:publicId", element: <React.Suspense fallback={<div>Loading...</div>}><ReportPublic/></React.Suspense> },
       { path: "/login", element: <React.Suspense fallback={<div>Loading...</div>}><Login/></React.Suspense> },
+      { path: "/dashboard", element: <React.Suspense fallback={<div>Loading...</div>}><Dashboard/></React.Suspense> },
     ]
   }
 ])
