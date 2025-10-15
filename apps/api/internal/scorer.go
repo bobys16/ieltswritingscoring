@@ -124,6 +124,8 @@ FEEDBACK REQUIREMENTS:
 - Provide actionable improvement strategies
 - Identify the ONE most critical area for improvement
 - Include what the candidate did well (positive reinforcement)
+- Use **bold** formatting for key terms and scores (e.g., **Task Achievement**, **Band 6.5**)
+- Use *italic* formatting for emphasis where appropriate
 
 Return ONLY this JSON structure:
 {"ta":number,"cc":number,"lr":number,"gra":number,"overall":number,"feedback":"...","cefr":"A1|A2|B1|B2|C1|C2"}
@@ -321,6 +323,9 @@ func validateAndEnhanceScore(score ScoreOut, essayText, taskType string) ScoreOu
 		score.Feedback = enhanceFeedback(score, essayText, taskType)
 	}
 
+	// Convert markdown formatting to HTML
+	score.Feedback = convertMarkdownToHTML(score.Feedback)
+
 	return score
 }
 
@@ -410,6 +415,19 @@ func abs(x float32) float32 {
 		return -x
 	}
 	return x
+}
+
+// convertMarkdownToHTML converts markdown bold formatting to HTML bold tags
+func convertMarkdownToHTML(text string) string {
+	// Convert **text** to <b>text</b>
+	boldRegex := regexp.MustCompile(`\*\*(.*?)\*\*`)
+	result := boldRegex.ReplaceAllString(text, "<b>$1</b>")
+	
+	// Convert *text* to <i>text</i> (italic)
+	italicRegex := regexp.MustCompile(`\*(.*?)\*`)
+	result = italicRegex.ReplaceAllString(result, "<i>$1</i>")
+	
+	return result
 }
 
 // generateFallbackScore provides sophisticated heuristic scoring when OpenAI is unavailable
@@ -528,7 +546,7 @@ func generateFallbackScore(essayText, taskType string) ScoreOut {
 		GRA:      gra,
 		Overall:  overall,
 		CEFR:     MapOverallToCEFR(overall),
-		Feedback: feedback,
+		Feedback: convertMarkdownToHTML(feedback),
 	}
 }
 

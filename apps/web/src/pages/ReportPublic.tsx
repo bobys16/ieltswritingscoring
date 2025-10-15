@@ -165,9 +165,10 @@ export default function ReportPublic() {
         {/* Feedback */}
         <div className="bg-white p-6 rounded-xl border shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Feedback</h2>
-          <p className="text-slate-700 leading-relaxed mb-6">
-            {data.feedback || "No feedback available"}
-          </p>
+          <p 
+            className="text-slate-700 leading-relaxed mb-6"
+            dangerouslySetInnerHTML={{ __html: data.feedback || "No feedback available" }}
+          />
           
           <div className="text-sm text-slate-500 mb-4">
             Task Type: {data.taskType || "task2"} | 

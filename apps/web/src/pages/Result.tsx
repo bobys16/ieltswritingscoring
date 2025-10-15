@@ -271,9 +271,10 @@ export default function Result() {
                 Detailed Feedback
               </h3>
               <div className="prose prose-slate max-w-none">
-                <p className="text-slate-700 leading-relaxed text-lg">
-                  {feedback}
-                </p>
+                <p 
+                  className="text-slate-700 leading-relaxed text-lg"
+                  dangerouslySetInnerHTML={{ __html: feedback }}
+                />
               </div>
             </div>
           </div>
