@@ -235,7 +235,7 @@ func ScoreEssay(ctx context.Context, apiKey, taskType, promptText, essayText str
 
 	// Validate and enhance the response
 	enhancedScore := validateAndEnhanceScore(primaryScore, essayText, taskType)
-	
+
 	return enhancedScore, nil
 }
 
@@ -243,7 +243,7 @@ func ScoreEssay(ctx context.Context, apiKey, taskType, promptText, essayText str
 func parseAIResponse(raw string) (ScoreOut, error) {
 	// Clean the response
 	raw = strings.TrimSpace(raw)
-	
+
 	// Remove markdown code blocks if present
 	if strings.Contains(raw, "```") {
 		lines := strings.Split(raw, "\n")
@@ -260,7 +260,7 @@ func parseAIResponse(raw string) (ScoreOut, error) {
 		}
 		raw = strings.Join(cleanLines, "\n")
 	}
-	
+
 	// Extract JSON object
 	start := strings.Index(raw, "{")
 	end := strings.LastIndex(raw, "}")
@@ -294,14 +294,14 @@ func validateAndEnhanceScore(score ScoreOut, essayText, taskType string) ScoreOu
 
 	// Quality checks for unrealistic high scores
 	words := len(strings.Fields(wsRegex.ReplaceAllString(essayText, " ")))
-	
+
 	// Penalize for insufficient word count
 	if words < 200 {
 		// Significant TA penalty for under-length essays
 		score.TA = min(score.TA, 5.5)
 		score.Overall = clampBand((score.TA + score.CC + score.LR + score.GRA) / 4)
 	}
-	
+
 	// Cross-validation: High scores should be rare and justified
 	if score.Overall >= 8.0 {
 		// Additional validation for high scores
@@ -332,28 +332,28 @@ func validateAndEnhanceScore(score ScoreOut, essayText, taskType string) ScoreOu
 // isHighScoreJustified checks if Band 8+ scores are warranted
 func isHighScoreJustified(essayText string, score ScoreOut) bool {
 	text := strings.ToLower(essayText)
-	
+
 	// Check for sophisticated vocabulary
-	advancedVocab := []string{"unprecedented", "comprehensive", "substantial", "meticulous", 
-							"profound", "intricate", "nuanced", "paradigm", "prevalent", 
-							"culminate", "exacerbate", "mitigate", "implement", "facilitate"}
+	advancedVocab := []string{"unprecedented", "comprehensive", "substantial", "meticulous",
+		"profound", "intricate", "nuanced", "paradigm", "prevalent",
+		"culminate", "exacerbate", "mitigate", "implement", "facilitate"}
 	vocabCount := 0
 	for _, word := range advancedVocab {
 		if strings.Contains(text, word) {
 			vocabCount++
 		}
 	}
-	
+
 	// Check for complex grammar structures
-	complexStructures := []string{"having been", "were to", "not only", "no sooner", 
-								"it is imperative that", "were it not for", "should there be"}
+	complexStructures := []string{"having been", "were to", "not only", "no sooner",
+		"it is imperative that", "were it not for", "should there be"}
 	grammarCount := 0
 	for _, structure := range complexStructures {
 		if strings.Contains(text, structure) {
 			grammarCount++
 		}
 	}
-	
+
 	// High scores require evidence of sophistication
 	return vocabCount >= 3 && grammarCount >= 1 && len(essayText) >= 250
 }
@@ -361,7 +361,7 @@ func isHighScoreJustified(essayText string, score ScoreOut) bool {
 // enhanceFeedback provides detailed, criterion-specific feedback
 func enhanceFeedback(score ScoreOut, essayText, taskType string) string {
 	var feedback strings.Builder
-	
+
 	// Opening assessment
 	if score.Overall >= 7.5 {
 		feedback.WriteString("This essay demonstrates strong writing proficiency. ")
@@ -373,7 +373,7 @@ func enhanceFeedback(score ScoreOut, essayText, taskType string) string {
 
 	// Specific criterion analysis
 	feedback.WriteString("Specific areas: ")
-	
+
 	if score.TA < 7.0 {
 		if taskType == "task2" {
 			feedback.WriteString("Task Achievement - ensure all parts of the question are fully addressed with well-developed arguments; ")
@@ -381,15 +381,15 @@ func enhanceFeedback(score ScoreOut, essayText, taskType string) string {
 			feedback.WriteString("Task Achievement - provide a clearer overview and select key features more effectively; ")
 		}
 	}
-	
+
 	if score.CC < 7.0 {
 		feedback.WriteString("Coherence & Cohesion - improve logical sequencing and use more sophisticated linking devices; ")
 	}
-	
+
 	if score.LR < 7.0 {
 		feedback.WriteString("Lexical Resource - expand vocabulary range and use less common words accurately; ")
 	}
-	
+
 	if score.GRA < 7.0 {
 		feedback.WriteString("Grammar - increase complex sentence variety while maintaining accuracy. ")
 	}
@@ -422,11 +422,11 @@ func convertMarkdownToHTML(text string) string {
 	// Convert **text** to <b>text</b>
 	boldRegex := regexp.MustCompile(`\*\*(.*?)\*\*`)
 	result := boldRegex.ReplaceAllString(text, "<b>$1</b>")
-	
+
 	// Convert *text* to <i>text</i> (italic)
 	italicRegex := regexp.MustCompile(`\*(.*?)\*`)
 	result = italicRegex.ReplaceAllString(result, "<i>$1</i>")
-	
+
 	return result
 }
 
@@ -434,13 +434,13 @@ func convertMarkdownToHTML(text string) string {
 func generateFallbackScore(essayText, taskType string) ScoreOut {
 	words := len(strings.Fields(wsRegex.ReplaceAllString(essayText, " ")))
 	text := strings.ToLower(essayText)
-	
+
 	// Initialize conservative scores (most essays are Band 6.0-6.5 range)
 	var ta, cc, lr, gra float32 = 6.0, 5.5, 6.0, 5.5
 
 	// TASK ACHIEVEMENT ANALYSIS
 	paragraphs := strings.Split(essayText, "\n\n")
-	
+
 	// Basic TA scoring
 	if words >= 250 && words <= 290 {
 		ta += 0.5 // Good word count management
@@ -448,10 +448,10 @@ func generateFallbackScore(essayText, taskType string) ScoreOut {
 	if len(paragraphs) >= 4 {
 		ta += 0.5 // Proper essay structure
 	}
-	
+
 	// COHERENCE AND COHESION ANALYSIS
-	linkingWords := []string{"however", "furthermore", "moreover", "nevertheless", "consequently", 
-							"in addition", "on the other hand", "in contrast", "therefore", "thus"}
+	linkingWords := []string{"however", "furthermore", "moreover", "nevertheless", "consequently",
+		"in addition", "on the other hand", "in contrast", "therefore", "thus"}
 	linkingCount := 0
 	for _, word := range linkingWords {
 		if strings.Contains(text, word) {
@@ -467,9 +467,9 @@ func generateFallbackScore(essayText, taskType string) ScoreOut {
 
 	// LEXICAL RESOURCE ANALYSIS
 	// Check for vocabulary sophistication
-	sophisticatedWords := []string{"significant", "substantial", "considerable", "phenomenon", 
-									"crucial", "vital", "essential", "demonstrate", "illustrate", 
-									"indicate", "suggest", "reveal", "evident", "apparent"}
+	sophisticatedWords := []string{"significant", "substantial", "considerable", "phenomenon",
+		"crucial", "vital", "essential", "demonstrate", "illustrate",
+		"indicate", "suggest", "reveal", "evident", "apparent"}
 	vocabScore := 0
 	for _, word := range sophisticatedWords {
 		if strings.Contains(text, word) {
@@ -516,8 +516,8 @@ func generateFallbackScore(essayText, taskType string) ScoreOut {
 	}
 
 	// Check for basic errors (simple heuristic)
-	commonErrors := []string{"a university", "an university", "much people", "less people", 
-							"more better", "most best", "in the other hand"}
+	commonErrors := []string{"a university", "an university", "much people", "less people",
+		"more better", "most best", "in the other hand"}
 	errorCount := 0
 	for _, error := range commonErrors {
 		if strings.Contains(text, error) {
@@ -561,7 +561,7 @@ func min(a, b float32) float32 {
 // generateDetailedFeedback creates specific feedback based on scores
 func generateDetailedFeedback(ta, cc, lr, gra float32, words int, taskType string) string {
 	var feedback strings.Builder
-	
+
 	// Overall assessment
 	overall := (ta + cc + lr + gra) / 4
 	if overall >= 7.0 {
