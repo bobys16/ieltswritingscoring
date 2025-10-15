@@ -105,16 +105,16 @@ func GetUserDashboard(db *gorm.DB) gin.HandlerFunc {
 
 		c.JSON(200, gin.H{
 			"user": gin.H{
-				"email":     user.Email,
-				"plan":      user.Plan,
-				"joinedAt":  user.CreatedAt,
+				"email":    user.Email,
+				"plan":     user.Plan,
+				"joinedAt": user.CreatedAt,
 			},
 			"stats": gin.H{
-				"totalEssays":   totalEssays,
-				"averageScore":  avgOverall,
-				"monthlyCount":  monthlyCount,
-				"improvement":   improvement,
-				"recentScores":  recentScores,
+				"totalEssays":  totalEssays,
+				"averageScore": avgOverall,
+				"monthlyCount": monthlyCount,
+				"improvement":  improvement,
+				"recentScores": recentScores,
 			},
 		})
 	}

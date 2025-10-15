@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*.pdf$
+
+# Allow crawling of main pages
+Allow: /
+Allow: /analyze
+Allow: /login
+Allow: /help
+Allow: /contact
+Allow: /privacy
+Allow: /terms
+
+# Sitemap location
+Sitemap: https://ielts-band-estimator.com/sitemap.xml
+
+# Crawl delay for politeness
+Crawl-delay: 1

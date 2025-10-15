@@ -57,7 +57,7 @@ func AnalyzeEssay(db *gorm.DB, rdb *redis.Client) gin.HandlerFunc {
 		// Check cache first
 		cached, err := GetCachedEssayAnalysis(rdb, req.Text, req.TaskType)
 		var out ScoreOut
-		
+
 		if err == nil && cached != nil {
 			// Use cached result
 			out = *cached

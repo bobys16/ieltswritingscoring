@@ -27,12 +27,20 @@
     <meta name="twitter:description" content="Free AI-powered IELTS Writing band prediction with detailed feedback." />
     <meta name="twitter:image" content="https://ielts-band-estimator.com/og-image.jpg" />
     
-    <!-- Additional SEO -->
+    <!-- Additional SEO and Performance -->
     <meta name="theme-color" content="#3a7afe" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
-    <!-- Structured Data -->
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//api.openai.com" />
+    
+    <!-- Structured Data for better SEO -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -42,6 +50,7 @@
       "url": "https://ielts-band-estimator.com",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Web Browser",
+      "browserRequirements": "Requires JavaScript enabled",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -50,17 +59,43 @@
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
-        "ratingCount": "1250"
+        "ratingCount": "1250",
+        "bestRating": "5",
+        "worstRating": "1"
       },
       "creator": {
         "@type": "Organization",
-        "name": "IELTS Band Estimator"
-      }
+        "name": "IELTS Band Estimator",
+        "url": "https://ielts-band-estimator.com"
+      },
+      "featureList": [
+        "Instant IELTS band prediction",
+        "Detailed feedback on essays",
+        "Task 1 and Task 2 analysis",
+        "PDF report generation",
+        "Progress tracking",
+        "Free analysis"
+      ]
     }
     </script>
+    
+    <!-- Critical CSS inline for LCP optimization -->
+    <style>
+      body { font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; }
+      .loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Skip to content for screen readers -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    
+    <div id="root">
+      <!-- Fallback loading state -->
+      <div class="loading">
+        <div>Loading IELTS Band Estimator...</div>
+      </div>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

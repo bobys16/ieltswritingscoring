@@ -1,0 +1,27 @@
+export default function Sitemap() {
+  const routes = [
+    { url: '/', priority: 1.0, changefreq: 'daily' },
+    { url: '/analyze', priority: 0.9, changefreq: 'daily' },
+    { url: '/login', priority: 0.6, changefreq: 'monthly' },
+    { url: '/dashboard', priority: 0.7, changefreq: 'weekly' },
+    { url: '/help', priority: 0.5, changefreq: 'monthly' },
+    { url: '/contact', priority: 0.5, changefreq: 'monthly' },
+    { url: '/privacy', priority: 0.3, changefreq: 'yearly' },
+    { url: '/terms', priority: 0.3, changefreq: 'yearly' },
+  ]
+
+  const baseUrl = 'https://ielts-band-estimator.com'
+  const currentDate = new Date().toISOString().split('T')[0]
+
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${routes.map(route => `  <url>
+    <loc>${baseUrl}${route.url}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`
+
+  return sitemapXml
+}

@@ -37,6 +37,8 @@ func main() {
 	rdb := internal.InitRedis()
 	if rdb == nil {
 		log.Println("Warning: Redis connection failed, rate limiting and caching disabled")
+	} else {
+		log.Println("Redis connected successfully")
 	}
 
 	// Initialize Gin router
@@ -54,14 +56,13 @@ func main() {
 	// API routes
 	api := r.Group("/api")
 	{
-		// Auth routes (public)
+		// Auth endpoints
 		auth := api.Group("/auth")
 		{
 			auth.POST("/signup", internal.Signup(db))
 			auth.POST("/login", internal.Login(db))
-		}
-
-		// Essay analysis (with optional auth and rate limiting)
+			auth.GET("/profile", internal.JWTMiddleware(), internal.GetProfile(db))
+		} // Essay analysis (with optional auth and rate limiting)
 		essays := api.Group("/essays")
 		essays.Use(internal.OptionalAuth(db)) // Optional authentication
 		if rdb != nil {
@@ -76,6 +77,15 @@ func main() {
 		{
 			reports.GET("/:publicId/pdf", internal.ReportPDF(db))
 			reports.GET("/:publicId", internal.GetReport(db))
+			reports.GET("/:publicId/og-image", internal.OGImageHandler(db))
+		}
+
+		// Analytics (with optional auth)
+		analytics := api.Group("/analytics")
+		analytics.Use(internal.OptionalAuth(db))
+		{
+			analytics.POST("/event", internal.TrackEvent(db, rdb))
+			analytics.GET("/stats", internal.GetAnalytics(db, rdb))
 		}
 
 		// Protected user routes (require authentication)
@@ -100,7 +110,7 @@ func main() {
 
 	log.Printf("API server starting on port %s", port)
 	log.Printf("Features: DB=%v, Redis=%v, Auth=%v", db != nil, rdb != nil, db != nil)
-	
+
 	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

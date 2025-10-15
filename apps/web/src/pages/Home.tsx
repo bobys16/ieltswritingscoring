@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react'
+import analytics from '../utils/analytics'
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false)
   
   useEffect(() => {
     setIsVisible(true)
+    // Track page view
+    analytics.trackPageView('/home', {
+      source: document.referrer || 'direct',
+      userAgent: navigator.userAgent
+    })
   }, [])
 
   return (
@@ -256,6 +262,60 @@ export default function Home() {
               <div className="font-semibold text-slate-800">Lisa Chen</div>
               <div className="text-sm text-slate-500">Professional</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Preview Section */}
+      <section className="py-24 bg-white">
+        <div className="container">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">IELTS Writing Tips & Guides</h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">Expert advice and strategies to help you achieve your target band score</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+              <div className="p-8">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
+                <h3 className="text-xl font-bold mb-3 text-slate-800">Band 7 vs Band 8: Key Differences</h3>
+                <p className="text-slate-600 mb-4">Understand what separates good writing from great writing</p>
+                <a href="/blog/ielts-band-7-vs-8-differences" className="text-brand font-medium hover:text-brand/80 transition-colors">
+                  Read More →
+                </a>
+              </div>
+            </div>
+            
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+              <div className="p-8">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📝</div>
+                <h3 className="text-xl font-bold mb-3 text-slate-800">Task 1 vs Task 2 Strategies</h3>
+                <p className="text-slate-600 mb-4">Different approaches for different essay types</p>
+                <a href="/blog/task-1-vs-task-2-strategies" className="text-brand font-medium hover:text-brand/80 transition-colors">
+                  Read More →
+                </a>
+              </div>
+            </div>
+            
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+              <div className="p-8">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🤖</div>
+                <h3 className="text-xl font-bold mb-3 text-slate-800">How Our AI Analysis Works</h3>
+                <p className="text-slate-600 mb-4">Behind the scenes of our scoring algorithm</p>
+                <a href="/blog/free-ielts-band-calculator-guide" className="text-brand font-medium hover:text-brand/80 transition-colors">
+                  Read More →
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <a 
+              href="/blog" 
+              className="inline-block px-8 py-4 border-2 border-brand text-brand font-semibold rounded-2xl hover:bg-brand hover:text-white transition-all duration-300"
+            >
+              View All Tips & Guides
+            </a>
           </div>
         </div>
       </section>

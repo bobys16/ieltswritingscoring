@@ -1,40 +1,143 @@
 # IELTS Band Estimator
 
-A professional web application that estimates IELTS Writing band scores with AI-powered analysis.
+A professional, responsive web application where users can paste their IELTS essay and receive detailed scoring analysis including Task Achievement (TA), Coherence & Cohesion (CC), Lexical Resource (LR), and Grammatical Range & Accuracy (GRA) scores, along with an overall band score, CEFR mapping, personalized feedback, and downloadable/shareable reports.
 
-## Tech Stack
+## 🚀 Features
 
-- **Frontend**: Vite + React + TypeScript + TailwindCSS + React Router + Recharts
-- **Backend**: Go + Gin + GORM + MySQL + Redis
-- **AI**: Server-side OpenAI/Claude integration
-- **Infrastructure**: Docker Compose + Nginx
+- **AI-Powered Scoring**: Advanced AI analysis of IELTS Writing tasks with accurate band scoring
+- **Comprehensive Feedback**: Detailed analysis across all four IELTS criteria
+- **Visual Reports**: Interactive charts and downloadable PDF reports
+- **User Authentication**: Secure JWT-based authentication system
+- **Rate Limiting**: Fair usage with Redis-backed rate limiting
+- **Responsive Design**: Mobile-first design with accessibility features
+- **Real-time Analysis**: Fast essay analysis with caching for better performance
 
-## Development
+## 🛠 Tech Stack
 
 ### Frontend
-```bash
-cd apps/web
-npm install
-npm run dev
-```
+- **Vite + React + TypeScript**: Modern development setup
+- **Tailwind CSS**: Utility-first CSS framework
+- **shadcn/ui**: High-quality component library
+- **React Router**: Client-side routing
+- **Recharts**: Interactive data visualization
 
 ### Backend
+- **Go + Gin**: Fast and lightweight web framework
+- **GORM**: Object-relational mapping
+- **PostgreSQL**: Robust relational database
+- **Redis**: Caching and rate limiting
+- **JWT**: Secure authentication
+
+### Infrastructure
+- **Docker + Docker Compose**: Containerized deployment
+- **Nginx**: Reverse proxy and load balancing
+- **OpenAPI**: API documentation
+
+## 📋 Prerequisites
+
+- **Node.js** 18+ and npm
+- **Go** 1.21+
+- **Docker** and Docker Compose
+- **PostgreSQL** 15+ (for local development)
+- **Redis** 7+ (for local development)
+
+## 🚀 Quick Start
+
+### 1. Clone the Repository
+
 ```bash
-cd apps/api
-go run main.go
+git clone https://github.com/yourusername/ielts-band-estimator.git
+cd ielts-band-estimator
 ```
 
-## Features
+### 2. Development Setup
 
-- ✅ Task 1 & Task 2 essay analysis
-- ✅ TA, CC, LR, GRA scoring with overall band
-- ✅ CEFR level mapping
-- ✅ Detailed feedback and suggestions
-- ✅ PDF report generation with QR codes
-- ✅ User authentication and history
-- ✅ Rate limiting and caching
-- ✅ Mobile-responsive design
+```bash
+# Install dependencies and set up development environment
+make setup
 
-## License
+# Start development servers (frontend and backend)
+make dev
+```
 
-MIT
+The application will be available at:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8080
+
+### 3. Production Deployment
+
+```bash
+# Set up environment variables
+cp infra/.env.example infra/.env
+# Edit infra/.env with your configuration
+
+# Deploy with Docker
+make up
+```
+
+The production application will be available at:
+- **Application**: http://localhost:80
+- **API**: http://localhost:8080
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the `infra/` directory:
+
+```env
+# Database
+DB_DSN=postgres://ielts_user:ielts_password@db:5432/ielts_db?sslmode=disable
+
+# JWT Secret (change in production!)
+JWT_SECRET=your_super_secret_jwt_key
+
+# AI Provider
+AI_PROVIDER=openai
+AI_KEY=your_openai_api_key
+
+# Rate Limiting
+RATE_LIMIT_PER_MIN=30
+
+# Application
+PUBLIC_BASE_URL=https://yourdomain.com
+PORT=8080
+
+# Redis
+REDIS_URL=redis://redis:6379
+```
+
+### AI Provider Setup
+
+The application supports OpenAI GPT models. To set up:
+
+1. Get an API key from [OpenAI](https://platform.openai.com/)
+2. Set the `AI_KEY` environment variable
+3. Optionally configure the model in `apps/api/internal/scorer.go`
+
+## 📁 Project Structure
+
+```
+ielts-band-estimator/
+├── apps/
+│   ├── web/                 # React frontend
+│   │   ├── src/
+│   │   │   ├── components/  # Reusable components
+│   │   │   ├── pages/       # Page components
+│   │   │   ├── hooks/       # Custom hooks
+│   │   │   └── utils/       # Utility functions
+│   │   └── public/          # Static assets
+│   └── api/                 # Go backend
+│       ├── internal/        # Internal packages
+│       │   ├── models.go    # Database models
+│       │   ├── handlers.go  # HTTP handlers
+│       │   ├── auth.go      # Authentication
+│       │   ├── scorer.go    # AI scoring logic
+│       │   └── redis.go     # Redis operations
+│       └── main.go          # Application entry point
+├── infra/                   # Infrastructure
+│   ├── docker-compose.yml  # Docker services
+│   ├── nginx.conf           # Nginx configuration
+│   └── deploy.sh            # Deployment script
+└── docs/                    # Documentation
+```

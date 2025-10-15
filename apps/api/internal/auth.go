@@ -17,7 +17,14 @@ type AuthRequest struct {
 }
 
 type AuthResponse struct {
-	Token string `json:"token"`
+	Token string   `json:"token"`
+	User  UserInfo `json:"user"`
+}
+
+type UserInfo struct {
+	ID    uint   `json:"id"`
+	Email string `json:"email"`
+	Plan  string `json:"plan"`
 }
 
 // Signup creates a new user account
@@ -60,7 +67,115 @@ func Signup(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, gin.H{"ok": true})
+		// Generate JWT token for immediate login
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sub": user.ID,
+			"exp": time.Now().Add(7 * 24 * time.Hour).Unix(), // 7 days
+		})
+
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "default-secret" // fallback for development
+		}
+
+		tokenString, err := token.SignedString([]byte(jwtSecret))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
+			return
+		}
+
+		userInfo := UserInfo{
+			ID:    user.ID,
+			Email: user.Email,
+			Plan:  user.Plan,
+		}
+
+		c.JSON(http.StatusCreated, AuthResponse{
+			Token: tokenString,
+			User:  userInfo,
+		})
+	}
+}
+
+// GetProfile returns the current user's profile information
+func GetProfile(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if db == nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "database not available"})
+			return
+		}
+
+		userID, exists := c.Get("userID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+
+		var user User
+		if err := db.First(&user, userID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+
+		userInfo := UserInfo{
+			ID:    user.ID,
+			Email: user.Email,
+			Plan:  user.Plan,
+		}
+
+		c.JSON(http.StatusOK, userInfo)
+	}
+}
+
+// JWTMiddleware validates JWT tokens and extracts user ID
+func JWTMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenString := c.GetHeader("Authorization")
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+			c.Abort()
+			return
+		}
+
+		// Remove "Bearer " prefix if present
+		if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+			tokenString = tokenString[7:]
+		}
+
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "default-secret"
+		}
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, jwt.ErrSignatureInvalid
+			}
+			return []byte(jwtSecret), nil
+		})
+
+		if err != nil || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			c.Abort()
+			return
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token claims"})
+			c.Abort()
+			return
+		}
+
+		userID, ok := claims["sub"].(float64)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user id in token"})
+			c.Abort()
+			return
+		}
+
+		c.Set("userID", uint(userID))
+		c.Next()
 	}
 }
 
@@ -108,6 +223,15 @@ func Login(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, AuthResponse{Token: tokenString})
+		userInfo := UserInfo{
+			ID:    user.ID,
+			Email: user.Email,
+			Plan:  user.Plan,
+		}
+
+		c.JSON(http.StatusOK, AuthResponse{
+			Token: tokenString,
+			User:  userInfo,
+		})
 	}
 }

@@ -1,33 +1,49 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import App from "./App"
-import "./index.css"
+import { initializePerformanceOptimizations } from './utils/performance'
+import './index.css'
 
-const Home = React.lazy(() => import("./pages/Home"))
-const Analyze = React.lazy(() => import("./pages/Analyze"))
-const Result = React.lazy(() => import("./pages/Result"))
-const Login = React.lazy(() => import("./pages/Login"))
-const Dashboard = React.lazy(() => import("./pages/Dashboard"))
-const ReportPublic = React.lazy(() => import("./pages/ReportPublic"))
+import App from './App.tsx'
+import Home from './pages/Home.tsx'
+import Analyze from './pages/Analyze.tsx'
+import Result from './pages/Result.tsx'
+import Login from './pages/Login.tsx'
+import Dashboard from './pages/Dashboard.tsx'
+import History from './pages/History.tsx'
+import Profile from './pages/Profile.tsx'
+import ReportPublic from './pages/ReportPublic.tsx'
+import Blog from './pages/Blog.tsx'
+import BlogPost from './pages/BlogPost.tsx'
+import { AuthProvider } from './components/AuthProvider.tsx'
+import ProtectedRoute from './components/ProtectedRoute.tsx'
 
 const router = createBrowserRouter([
-  { 
-    path: "/", 
-    element: <App/>, 
+  {
+    path: "/",
+    element: <App />,
     children: [
-      { path: "/", element: <React.Suspense fallback={<div>Loading...</div>}><Home/></React.Suspense> },
-      { path: "/analyze", element: <React.Suspense fallback={<div>Loading...</div>}><Analyze/></React.Suspense> },
-      { path: "/result/:id", element: <React.Suspense fallback={<div>Loading...</div>}><Result/></React.Suspense> },
-      { path: "/r/:publicId", element: <React.Suspense fallback={<div>Loading...</div>}><ReportPublic/></React.Suspense> },
-      { path: "/login", element: <React.Suspense fallback={<div>Loading...</div>}><Login/></React.Suspense> },
-      { path: "/dashboard", element: <React.Suspense fallback={<div>Loading...</div>}><Dashboard/></React.Suspense> },
+      { index: true, element: <Home /> },
+      { path: "analyze", element: <Analyze /> },
+      { path: "result/:id", element: <Result /> },
+      { path: "login", element: <Login /> },
+      { path: "dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+      { path: "history", element: <ProtectedRoute><History /></ProtectedRoute> },
+      { path: "profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+      { path: "r/:publicId", element: <ReportPublic /> },
+      { path: "blog", element: <Blog /> },
+      { path: "blog/:id", element: <BlogPost /> },
     ]
   }
 ])
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <RouterProvider router={router}/>
-  </React.StrictMode>
+// Initialize performance optimizations
+initializePerformanceOptimizations()
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  </StrictMode>,
 )

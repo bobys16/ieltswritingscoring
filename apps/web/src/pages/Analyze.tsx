@@ -1,37 +1,91 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import analytics from '../utils/analytics'
 
 export default function Analyze() {
   const [text, setText] = useState("")
   const [taskType, setTaskType] = useState<"task1"|"task2">("task2")
   const [loading, setLoading] = useState(false)
+  const [notification, setNotification] = useState<{
+    type: 'info' | 'warning' | 'error' | 'success'
+    message: string
+    showLoginSuggestion?: boolean
+  } | null>(null)
   const nav = useNavigate()
+
+  useEffect(() => {
+    analytics.trackPageView('/analyze')
+    analytics.trackFunnelStep('analyze_page_visit')
+  }, [])
 
   const words = text.trim().split(/\s+/).filter(Boolean).length
   const isValidLength = words >= 150 && words <= 320
 
+  const dismissNotification = () => setNotification(null)
+
   async function onAnalyze() {
     if (!isValidLength) { 
-      alert("Essay must be 150–320 words.") 
+      setNotification({
+        type: 'warning',
+        message: "Essay must be 150–320 words."
+      })
       return 
     }
     
     setLoading(true)
+    setNotification(null)
+    analytics.trackFunnelStep('analyze_button_click', { taskType, wordCount: words })
+    
     try {
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {"Content-Type": "application/json"}
+      if (token) {
+        headers.Authorization = `Bearer ${token}`
+      }
+
       const res = await fetch("/api/essays/analyze", {
         method: "POST", 
-        headers: {"Content-Type": "application/json"}, 
+        headers, 
         body: JSON.stringify({ text, taskType })
       })
       const data = await res.json()
       
       if (res.ok) {
+        analytics.trackEssayAnalyze(taskType, words, data.overall)
+        analytics.trackFunnelStep('analysis_success', { 
+          bandScore: data.overall, 
+          cefr: data.cefr 
+        })
         nav(`/result/${data.publicId || "local"}`, { state: data })
+      } else if (res.status === 429) {
+        analytics.trackFunnelStep('rate_limit_hit', { 
+          userType: data.userType,
+          remaining: data.remaining 
+        })
+        // Handle rate limiting with friendly notification
+        if (data.suggestLogin) {
+          setNotification({
+            type: 'info',
+            message: data.message || "You've used your 3 free analyses. Create an account to get 7 more today!",
+            showLoginSuggestion: true
+          })
+        } else {
+          setNotification({
+            type: 'warning',
+            message: data.message || "Daily rate limit exceeded. Please try again tomorrow."
+          })
+        }
       } else {
-        alert(data.error || "Analysis failed")
+        setNotification({
+          type: 'error',
+          message: data.error || "Analysis failed"
+        })
       }
     } catch (err) {
-      alert("Network error. Please try again.")
+      setNotification({
+        type: 'error',
+        message: "Network error. Please try again."
+      })
     } finally {
       setLoading(false)
     }
@@ -49,6 +103,53 @@ export default function Analyze() {
             Paste your Task 1 or Task 2 essay and get instant band scores with detailed feedback from our AI examiner.
           </p>
         </div>
+
+        {/* Notification */}
+        {notification && (
+          <div className={`mb-8 p-4 rounded-xl border-l-4 ${
+            notification.type === 'info' ? 'bg-blue-50 border-blue-400' :
+            notification.type === 'warning' ? 'bg-amber-50 border-amber-400' :
+            notification.type === 'error' ? 'bg-red-50 border-red-400' :
+            'bg-green-50 border-green-400'
+          }`}>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className={`text-sm font-medium ${
+                  notification.type === 'info' ? 'text-blue-800' :
+                  notification.type === 'warning' ? 'text-amber-800' :
+                  notification.type === 'error' ? 'text-red-800' :
+                  'text-green-800'
+                }`}>
+                  {notification.message}
+                </p>
+                {notification.showLoginSuggestion && (
+                  <div className="mt-3 flex items-center gap-3">
+                    <a 
+                      href="/login" 
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Create Account
+                    </a>
+                    <span className="text-xs text-blue-600">Get 7 more analyses today!</span>
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={dismissNotification}
+                className={`ml-4 ${
+                  notification.type === 'info' ? 'text-blue-400 hover:text-blue-600' :
+                  notification.type === 'warning' ? 'text-amber-400 hover:text-amber-600' :
+                  notification.type === 'error' ? 'text-red-400 hover:text-red-600' :
+                  'text-green-400 hover:text-green-600'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8 lg:p-12">
           {/* Task Type Selection */}

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -63,72 +64,102 @@ func JWTAuth(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// Rate limiting middleware using Redis
+// Enhanced rate limiting middleware with IP-based tracking to prevent account creation exploits
 func RateLimit(rdb *redis.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get user ID from JWT or use IP for anonymous users
-		var key string
-		if userID, exists := c.Get("userID"); exists {
-			user := c.MustGet("user").(User)
-			// Authenticated users get more requests
-			if user.Plan == "pro" {
-				key = "rate_limit:user:pro:" + userID.(string)
-			} else {
-				key = "rate_limit:user:free:" + userID.(string)
-			}
-		} else {
-			// Anonymous users (limited requests)
-			key = "rate_limit:ip:" + c.ClientIP()
-		}
-
-		// Check current count
 		ctx := c.Request.Context()
-		current, err := rdb.Get(ctx, key).Int()
+		clientIP := c.ClientIP()
+
+		// Always track IP-based usage to prevent exploit
+		ipKey := "rate_limit:ip:" + clientIP
+		ipUsage, err := rdb.Get(ctx, ipKey).Int()
 		if err != nil && err != redis.Nil {
 			c.AbortWithStatusJSON(500, gin.H{"error": "Rate limit check failed"})
 			return
 		}
 
-		// Set limits based on user type
-		var limit int
-		if strings.Contains(key, "pro") {
-			limit = 50 // Pro users: 50 requests per hour
-		} else if strings.Contains(key, "free") {
-			limit = 10 // Free users: 10 requests per hour
-		} else {
-			limit = 3 // Anonymous: 3 requests per hour
+		// Check if user is authenticated
+		var isAuthenticated bool
+		if _, exists := c.Get("userID"); exists {
+			isAuthenticated = true
 		}
 
-		if current >= limit {
+		// Define limits
+		const (
+			ANONYMOUS_LIMIT     = 3  // Anonymous users: 3 requests per day
+			AUTHENTICATED_LIMIT = 10 // Authenticated users: 10 requests per day (total from same IP)
+			DAILY_EXPIRY        = 24 * time.Hour
+		)
+
+		var userType string
+		if isAuthenticated {
+			userType = "authenticated"
+		} else {
+			userType = "anonymous"
+		}
+
+		// Check if IP has exceeded the maximum daily limit (10) regardless of authentication status
+		if ipUsage >= AUTHENTICATED_LIMIT {
 			c.AbortWithStatusJSON(429, gin.H{
-				"error":       "Rate limit exceeded",
-				"limit":       limit,
-				"resetTime":   time.Now().Add(time.Hour).Unix(),
-				"suggestion":  "Sign up for more requests or upgrade to Pro",
+				"error":     "Daily rate limit exceeded for this IP address",
+				"limit":     AUTHENTICATED_LIMIT,
+				"used":      ipUsage,
+				"remaining": 0,
+				"resetTime": time.Now().Add(DAILY_EXPIRY).Unix(),
+				"message":   "Maximum daily requests reached from this location. Please try again tomorrow.",
+				"userType":  userType,
 			})
 			return
 		}
 
-		// Increment counter
+		// For anonymous users, check if they've exceeded their 3-request limit
+		if !isAuthenticated && ipUsage >= ANONYMOUS_LIMIT {
+			remaining := AUTHENTICATED_LIMIT - ipUsage
+			c.AbortWithStatusJSON(429, gin.H{
+				"error":        "Anonymous rate limit exceeded",
+				"limit":        ANONYMOUS_LIMIT,
+				"used":         ipUsage,
+				"remaining":    remaining,
+				"resetTime":    time.Now().Add(DAILY_EXPIRY).Unix(),
+				"message":      fmt.Sprintf("You've used your %d free analyses. Create an account to get %d more today!", ANONYMOUS_LIMIT, remaining),
+				"userType":     userType,
+				"suggestLogin": true,
+			})
+			return
+		}
+
+		// Increment IP counter
 		pipe := rdb.Pipeline()
-		pipe.Incr(ctx, key)
-		pipe.Expire(ctx, key, time.Hour)
+		pipe.Incr(ctx, ipKey)
+		pipe.Expire(ctx, ipKey, DAILY_EXPIRY)
 		_, err = pipe.Exec(ctx)
 		if err != nil {
 			c.AbortWithStatusJSON(500, gin.H{"error": "Rate limit update failed"})
 			return
 		}
 
-		// Add rate limit headers
-		c.Header("X-RateLimit-Limit", string(rune(limit)))
-		c.Header("X-RateLimit-Remaining", string(rune(limit-current-1)))
-		c.Header("X-RateLimit-Reset", string(rune(time.Now().Add(time.Hour).Unix())))
+		// Calculate remaining requests
+		var currentLimit int
+		if isAuthenticated {
+			currentLimit = AUTHENTICATED_LIMIT
+		} else {
+			currentLimit = ANONYMOUS_LIMIT
+		}
+
+		remaining := currentLimit - (ipUsage + 1)
+		if remaining < 0 {
+			remaining = 0
+		}
+
+		c.Header("X-RateLimit-Limit", fmt.Sprintf("%d", currentLimit))
+		c.Header("X-RateLimit-Used", fmt.Sprintf("%d", ipUsage+1))
+		c.Header("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
+		c.Header("X-RateLimit-Reset", fmt.Sprintf("%d", time.Now().Add(DAILY_EXPIRY).Unix()))
+		c.Header("X-RateLimit-UserType", userType)
 
 		c.Next()
 	}
-}
-
-// Optional auth middleware (doesn't block if no token)
+} // Optional auth middleware (doesn't block if no token)
 func OptionalAuth(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")

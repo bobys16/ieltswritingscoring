@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true)
@@ -8,6 +9,11 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login, signup } = useAuth()
+
+  // Get the redirect path from location state, default to dashboard
+  const from = (location.state as any)?.from?.pathname || '/dashboard'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -15,33 +21,17 @@ export default function Login() {
     setError('')
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup'
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        if (isLogin) {
-          // Store token and redirect to dashboard
-          localStorage.setItem('token', data.token)
-          navigate('/dashboard')
-        } else {
-          // Show success message and switch to login
-          setIsLogin(true)
-          setError('')
-          alert('Account created successfully! Please log in.')
-        }
+      if (isLogin) {
+        // Use AuthProvider login method
+        await login(email, password)
+        navigate(from, { replace: true })
       } else {
-        setError(data.error || 'Authentication failed')
+        // Use AuthProvider signup method
+        await signup(email, password)
+        navigate(from, { replace: true })
       }
     } catch (err) {
-      setError('Network error. Please try again.')
+      setError(err instanceof Error ? err.message : 'Authentication failed')
     } finally {
       setLoading(false)
     }
