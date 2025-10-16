@@ -9,14 +9,42 @@ export default function Result() {
   const { id } = useParams()
   const [downloadingPDF, setDownloadingPDF] = useState(false)
   const [copyingLink, setCopyingLink] = useState(false)
+  const [reportData, setReportData] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   const { triggerOnResultView } = useFeedback()
   
-  const data = state || {}
-  const bands = data.bands || { ta: 7, cc: 6.5, lr: 7, gra: 7 }
-  const overall = data.overall || 7.0
-  const cefr = data.cefr || "B2"
-  const feedback = data.feedback || "Work on coherence with clear transitions and consistent paragraphing. Vary complex sentences and reduce minor grammatical slips."
+  // Use state data first, otherwise use fetched data
+  const data = state || reportData || {}
+  const bands = data.bands || { ta: 0, cc: 0, lr: 0, gra: 0 }
+  const overall = data.overall || 0
+  const cefr = data.cefr || "A1"
+  const feedback = data.feedback || "Loading..."
+
+  // Fetch report data if no state and ID exists
+  useEffect(() => {
+    async function fetchReportData() {
+      if (!state && id) {
+        setLoading(true)
+        setError(null)
+        try {
+          const response = await fetch(`/api/reports/${id}`)
+          if (!response.ok) {
+            throw new Error('Report not found')
+          }
+          const reportData = await response.json()
+          setReportData(reportData)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to load report')
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+    
+    fetchReportData()
+  }, [state, id])
 
   useEffect(() => {
     analytics.trackPageView('/result', {
@@ -149,18 +177,54 @@ export default function Result() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       <section className="container py-12 max-w-6xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-            Your <span className="bg-gradient-to-r from-brand to-blue-600 bg-clip-text text-transparent">IELTS Band</span> Result
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Based on official IELTS Writing assessment criteria with 95% accuracy
-          </p>
-          <div className="mt-4 text-sm text-slate-500">
-            {data.createdAt && `Analyzed on ${new Date(data.createdAt).toLocaleDateString()}`}
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-brand/10 rounded-full mb-4">
+              <svg className="animate-spin w-8 h-8 text-brand" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-slate-700 mb-2">Loading Report</h2>
+            <p className="text-slate-500">Please wait while we fetch your results...</p>
           </div>
-        </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.667-.833-2.464 0L5.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-slate-700 mb-2">Report Not Found</h2>
+            <p className="text-slate-500 mb-6">{error}</p>
+            <Link
+              to="/analyze"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-brand text-white font-semibold rounded-xl hover:bg-brand/90 transition-all"
+            >
+              Analyze New Essay
+            </Link>
+          </div>
+        )}
+
+        {/* Main Content - Only show if not loading and no error */}
+        {!loading && !error && (
+          <>
+            {/* Header */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+                Your <span className="bg-gradient-to-r from-brand to-blue-600 bg-clip-text text-transparent">IELTS Band</span> Result
+              </h1>
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                Based on official IELTS Writing assessment criteria with 95% accuracy
+              </p>
+              <div className="mt-4 text-sm text-slate-500">
+                {data.createdAt && `Analyzed on ${new Date(data.createdAt).toLocaleDateString()}`}
+              </div>
+            </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
           {/* Overall Score & Band Breakdown */}
@@ -393,6 +457,8 @@ export default function Result() {
             </div>
           </div>
         </div>
+          </>
+        )}
       </section>
     </div>
   )

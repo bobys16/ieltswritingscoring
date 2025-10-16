@@ -24,12 +24,12 @@ type Essay struct {
 }
 
 type UserFeedback struct {
-	ID        uint      `gorm:"primaryKey"`
-	UserID    *uint     `gorm:"index"`
-	Rating    int       `gorm:"not null"` // 1-5 stars
-	Comment   string    `gorm:"type:TEXT"`
-	Email     string    // Optional email for follow-up
-	UserAgent string    // Browser info
-	URL       string    // Page where feedback was given
+	ID        uint   `gorm:"primaryKey"`
+	UserID    *uint  `gorm:"index"`
+	Rating    int    `gorm:"not null"` // 1-5 stars
+	Comment   string `gorm:"type:TEXT"`
+	Email     string // Optional email for follow-up
+	UserAgent string // Browser info
+	URL       string // Page where feedback was given
 	CreatedAt time.Time
 }
