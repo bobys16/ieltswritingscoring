@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# IELTS Band Estimator - VPS Deployment Script
+# BandLy - VPS Deployment Script
 # Run this script on your Ubuntu VPS to automatically set up the application
 
 set -e  # Exit on any error
 
-echo "🚀 IELTS Band Estimator - VPS Deployment Script"
+echo "🚀 BandLy - VPS Deployment Script"
 echo "================================================"
 
 # Colors for output
@@ -216,7 +216,7 @@ fi
 
 print_header "🎉 Deployment Complete!"
 echo ""
-print_status "Your IELTS Band Estimator is now deployed!"
+print_status "Your BandLy is now deployed!"
 echo ""
 echo "📋 Next Steps:"
 echo "  1. Point your domain DNS to this server's IP"

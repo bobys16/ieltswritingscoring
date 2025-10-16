@@ -31,9 +31,9 @@ export default function App() {
           <Link 
             to="/" 
             className="text-xl font-bold bg-gradient-to-r from-brand to-blue-600 bg-clip-text text-transparent focus:outline-none focus:ring-2 focus:ring-brand/20 focus:ring-offset-2 rounded-md px-1"
-            aria-label="IELTS Band Estimator - Home"
+            aria-label="BandLy - Home"
           >
-            IELTS Band Estimator
+            BandLy
           </Link>
           
           {/* Desktop navigation */}
@@ -168,16 +168,16 @@ export default function App() {
           <div className="grid md:grid-cols-4 gap-8">
             <div className="col-span-2">
               <div className="text-xl font-bold bg-gradient-to-r from-brand to-blue-600 bg-clip-text text-transparent mb-4">
-                IELTS Band Estimator
+                BandLy
               </div>
               <p className="text-slate-600 mb-4 max-w-md">
-                Get instant, accurate IELTS Writing band predictions with our AI-powered examiner. Improve your scores with detailed feedback.
+                Get instant, accurate IELTS Writing band predictions with our AI-powered examiner. Improve your scores with detailed feedback. Created by SidigiGroup.
               </p>
               <div className="flex gap-4" role="list" aria-label="Social media links">
                 <a 
-                  href="https://twitter.com/ieltsestimator" 
+                  href="https://twitter.com/bandly_ai" 
                   className="text-slate-400 hover:text-brand transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20 focus:ring-offset-2 rounded-md p-1"
-                  aria-label="Follow us on Twitter"
+                  aria-label="Follow BandLy on Twitter"
                   role="listitem"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -185,9 +185,9 @@ export default function App() {
                   </svg>
                 </a>
                 <a 
-                  href="https://linkedin.com/company/ielts-estimator" 
+                  href="https://linkedin.com/company/sidigigroup" 
                   className="text-slate-400 hover:text-brand transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20 focus:ring-offset-2 rounded-md p-1"
-                  aria-label="Connect with us on LinkedIn"
+                  aria-label="Connect with SidigiGroup on LinkedIn"
                   role="listitem"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -259,7 +259,8 @@ export default function App() {
           </div>
           
           <div className="border-t border-slate-200 mt-8 pt-8 text-center text-slate-500">
-            <p>© {new Date().getFullYear()} IELTS Band Estimator. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} BandLy by SidigiGroup. All rights reserved.</p>
+            <p className="mt-1 text-sm">Contact: info@sidiginesia.com | +62 8983474036</p>
             <p className="mt-1 text-sm">Improve your IELTS Writing faster with 95% accuracy • Trusted by 25,000+ students</p>
           </div>
         </div>

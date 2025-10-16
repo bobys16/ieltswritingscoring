@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/boby/ielts-band-estimator/api/internal"
+	"github.com/sidigigroup/bandly/api/internal"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"

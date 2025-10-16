@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: IELTS Band Estimator API
+  title: BandLy API
   description: API for analyzing IELTS Writing essays and generating band scores
   version: 1.0.0
   contact:

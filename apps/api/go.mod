@@ -1,4 +1,4 @@
-module github.com/boby/ielts-band-estimator/api
+module github.com/sidigigroup/bandly/api
 
 go 1.25.1
 

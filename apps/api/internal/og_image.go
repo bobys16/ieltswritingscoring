@@ -142,7 +142,7 @@ func generateOGImage(score ScoreOut) (image.Image, error) {
 	c.SetFontSize(24)
 	c.SetSrc(image.NewUniform(color.RGBA{255, 255, 255, 200})) // Semi-transparent white
 	pt = freetype.Pt(width-400, height-30)
-	if _, err := c.DrawString("ielts-band-estimator.com", pt); err != nil {
+	if _, err := c.DrawString("bandly.com", pt); err != nil {
 		return nil, err
 	}
 

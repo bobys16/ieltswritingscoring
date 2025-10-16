@@ -1,6 +1,9 @@
-# IELTS Band Estimator
+# BandLy
 
 A professional, responsive web application where users can paste their IELTS essay and receive detailed scoring analysis including Task Achievement (TA), Coherence & Cohesion (CC), Lexical Resource (LR), and Grammatical Range & Accuracy (GRA) scores, along with an overall band score, CEFR mapping, personalized feedback, and downloadable/shareable reports.
+
+**Created by SidigiGroup**  
+Contact: info@sidiginesia.com | +62 8983474036
 
 ## 🚀 Features
 
@@ -46,8 +49,8 @@ A professional, responsive web application where users can paste their IELTS ess
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/ielts-band-estimator.git
-cd ielts-band-estimator
+git clone https://github.com/sidigigroup/bandly.git
+cd bandly
 ```
 
 ### 2. Development Setup

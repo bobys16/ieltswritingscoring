@@ -1,9 +1,9 @@
-# IELTS Band Estimator - Development & Deployment
+# BandLy - Development & Deployment
 .PHONY: help dev build up down logs clean test docker-build docker-up docker-down
 
 # Default target
 help: ## Show this help message
-	@echo "IELTS Band Estimator - Available Commands:"
+	@echo "BandLy - Available Commands:"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 

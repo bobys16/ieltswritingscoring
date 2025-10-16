@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Production Build Script for IELTS Band Estimator
+# Production Build Script for BandLy
 # This script builds both frontend and backend for production deployment
 
 set -e
 
-echo "🏗️  Building IELTS Band Estimator for Production"
+echo "🏗️  Building BandLy for Production"
 echo "================================================"
 
 # Colors

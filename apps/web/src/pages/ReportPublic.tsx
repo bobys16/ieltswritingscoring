@@ -35,7 +35,7 @@ export default function ReportPublic() {
   // Function to update meta tags for social sharing
   function updateMetaTags(reportData: any, publicId: string) {
     const title = `IELTS Band ${reportData.overall} - ${reportData.cefr} Level`
-    const description = `Check out this IELTS Writing analysis: Band ${reportData.overall} (${reportData.cefr}). Get your free essay analysis at IELTS Band Estimator.`
+    const description = `Check out this IELTS Writing analysis: Band ${reportData.overall} (${reportData.cefr}). Get your free essay analysis at BandLy.`
     const ogImageUrl = `${window.location.origin}/api/reports/${publicId}/og-image`
     const shareUrl = window.location.href
 
@@ -232,7 +232,7 @@ export default function ReportPublic() {
         </div>
         
         <div className="text-sm text-slate-500">
-          Help others discover IELTS Band Estimator • 100% Free Analysis
+          Help others discover BandLy • 100% Free Analysis
         </div>
       </div>
     </section>

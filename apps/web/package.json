@@ -1,7 +1,8 @@
 {
-  "name": "web",
+  "name": "bandly-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "BandLy - IELTS Writing Band Estimator by SidigiGroup",
   "type": "module",
   "scripts": {
     "dev": "vite",
