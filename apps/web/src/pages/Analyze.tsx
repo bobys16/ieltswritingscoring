@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import analytics from '../utils/analytics'
+import { useFeedback } from '../hooks/useFeedback'
 
 export default function Analyze() {
   const [text, setText] = useState("")
@@ -12,6 +13,7 @@ export default function Analyze() {
     showLoginSuggestion?: boolean
   } | null>(null)
   const nav = useNavigate()
+  const { triggerOnFeatureUse } = useFeedback()
 
   useEffect(() => {
     analytics.trackPageView('/analyze')
@@ -56,6 +58,10 @@ export default function Analyze() {
           bandScore: data.overall, 
           cefr: data.cefr 
         })
+        
+        // Trigger feedback after successful analysis
+        triggerOnFeatureUse()
+        
         nav(`/result/${data.publicId || "local"}`, { state: data })
       } else if (res.status === 429) {
         analytics.trackFunnelStep('rate_limit_hit', { 

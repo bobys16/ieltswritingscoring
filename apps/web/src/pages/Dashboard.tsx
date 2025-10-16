@@ -164,6 +164,18 @@ export default function Dashboard() {
                 {dashboard?.user.plan || 'Free'} Plan
               </span>
               <button
+                onClick={() => {
+                  // Use global feedback trigger function
+                  if ((window as any).triggerFeedback) {
+                    (window as any).triggerFeedback()
+                  }
+                }}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm"
+                title="Test Feedback Modal"
+              >
+                💭 Feedback
+              </button>
+              <button
                 onClick={logout}
                 className="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium"
               >

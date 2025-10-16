@@ -2,12 +2,15 @@ import { useLocation, useParams, Link } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts"
 import analytics from '../utils/analytics'
+import { useFeedback } from '../hooks/useFeedback'
 
 export default function Result() {
   const { state } = useLocation() as any
   const { id } = useParams()
   const [downloadingPDF, setDownloadingPDF] = useState(false)
   const [copyingLink, setCopyingLink] = useState(false)
+  
+  const { triggerOnResultView } = useFeedback()
   
   const data = state || {}
   const bands = data.bands || { ta: 7, cc: 6.5, lr: 7, gra: 7 }
@@ -25,7 +28,10 @@ export default function Result() {
       bandScore: overall,
       cefr: cefr
     })
-  }, [overall, cefr, data.publicId, id])
+    
+    // Trigger feedback after user has seen results
+    triggerOnResultView()
+  }, [overall, cefr, data.publicId, id, triggerOnResultView])
 
   // Prepare chart data
   const chartData = [

@@ -67,6 +67,19 @@ export default function Home() {
               >
                 See How It Works
               </a>
+              {/* Test feedback button */}
+              <button
+                onClick={() => {
+                  // Use global feedback trigger function
+                  if ((window as any).triggerFeedback) {
+                    (window as any).triggerFeedback()
+                  }
+                }}
+                className="px-6 py-3 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-colors font-medium text-sm"
+                title="Test Feedback Modal"
+              >
+                💭 Give Feedback
+              </button>
             </div>
 
             {/* Trust indicators */}

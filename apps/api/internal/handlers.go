@@ -128,3 +128,56 @@ func AnalyzeEssay(db *gorm.DB, rdb *redis.Client) gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+type FeedbackRequest struct {
+	Rating    int    `json:"rating" binding:"required,min=1,max=5"`
+	Comment   string `json:"comment"`
+	Email     string `json:"userEmail"`
+	UserAgent string `json:"userAgent"`
+	URL       string `json:"url"`
+	Timestamp string `json:"timestamp"`
+}
+
+// SubmitFeedback handles user feedback submissions
+func SubmitFeedback(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req FeedbackRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+			return
+		}
+
+		// Get user ID if authenticated (optional)
+		var userID *uint
+		if userIDInterface, exists := c.Get("userID"); exists {
+			if uid, ok := userIDInterface.(uint); ok {
+				userID = &uid
+			}
+		}
+
+		// Create feedback record
+		feedback := UserFeedback{
+			UserID:    userID,
+			Rating:    req.Rating,
+			Comment:   req.Comment,
+			Email:     req.Email,
+			UserAgent: req.UserAgent,
+			URL:       req.URL,
+			CreatedAt: time.Now(),
+		}
+
+		// Try to save to database
+		if db != nil {
+			if err := db.Create(&feedback).Error; err != nil {
+				// Log error but don't fail the request
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save feedback"})
+				return
+			}
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "Thank you for your feedback!",
+		})
+	}
+}

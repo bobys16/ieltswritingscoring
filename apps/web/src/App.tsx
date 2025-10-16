@@ -1,15 +1,55 @@
 import { Outlet, Link } from "react-router-dom"
 import { useState, useEffect } from "react"
+import FeedbackModal from "./components/FeedbackModal"
+import { useFeedback } from "./hooks/useFeedback"
 
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  
+  const {
+    isModalOpen,
+    handleModalClose,
+    handleFeedbackSubmit,
+    triggerOnPageLeave,
+    triggerFeedbackCheck
+  } = useFeedback()
 
   useEffect(() => {
     // Check if user is authenticated
     const token = localStorage.getItem('token')
     setIsAuthenticated(!!token)
   }, [])
+
+  // Handle page leave for feedback trigger
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      triggerOnPageLeave()
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        triggerOnPageLeave()
+      }
+    }
+
+    // Global feedback trigger function
+    const handleGlobalFeedbackTrigger = () => {
+      triggerFeedbackCheck(true)
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    // Add global feedback trigger
+    ;(window as any).triggerFeedback = handleGlobalFeedbackTrigger
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      delete (window as any).triggerFeedback
+    }
+  }, [triggerOnPageLeave, triggerFeedbackCheck])
 
   const logout = () => {
     localStorage.removeItem('token')
@@ -30,10 +70,14 @@ export default function App() {
         >
           <Link 
             to="/" 
-            className="text-xl font-bold bg-gradient-to-r from-brand to-blue-600 bg-clip-text text-transparent focus:outline-none focus:ring-2 focus:ring-brand/20 focus:ring-offset-2 rounded-md px-1"
+            className="flex items-center focus:outline-none focus:ring-2 focus:ring-brand/20 focus:ring-offset-2 rounded-md px-1"
             aria-label="BandLy - Home"
           >
-            BandLy
+            <img 
+              src="/logo.png" 
+              alt="BandLy" 
+              className="h-12 w-auto"
+            />
           </Link>
           
           {/* Desktop navigation */}
@@ -167,9 +211,11 @@ export default function App() {
         <div className="container py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="col-span-2">
-              <div className="text-xl font-bold bg-gradient-to-r from-brand to-blue-600 bg-clip-text text-transparent mb-4">
-                BandLy
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="BandLy by SidigiGroup" 
+                className="h-10 w-auto mb-4"
+              />
               <p className="text-slate-600 mb-4 max-w-md">
                 Get instant, accurate IELTS Writing band predictions with our AI-powered examiner. Improve your scores with detailed feedback. Created by SidigiGroup.
               </p>
@@ -265,6 +311,13 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSubmit={handleFeedbackSubmit}
+      />
     </div>
   )
 }

@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/sidigigroup/bandly/api/internal"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/sidigigroup/bandly/api/internal"
 	"gorm.io/gorm"
 )
 
@@ -87,6 +87,9 @@ func main() {
 			analytics.POST("/event", internal.TrackEvent(db, rdb))
 			analytics.GET("/stats", internal.GetAnalytics(db, rdb))
 		}
+
+		// Feedback (with optional auth)
+		api.POST("/feedback", internal.OptionalAuth(db), internal.SubmitFeedback(db))
 
 		// Protected user routes (require authentication)
 		if db != nil {
