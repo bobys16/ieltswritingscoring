@@ -28,6 +28,12 @@ func main() {
 				log.Printf("Database migration failed: %v", err)
 			} else {
 				log.Println("Database connected and migrated successfully")
+
+				// Create default admin user
+				if err := internal.CreateDefaultAdmin(database); err != nil {
+					log.Printf("Failed to create default admin user: %v", err)
+				}
+
 				db = database
 			}
 		}
@@ -101,6 +107,32 @@ func main() {
 				user.GET("/essays/:id", internal.GetEssayDetails(db))
 				user.DELETE("/essays/:id", internal.DeleteEssay(db))
 				user.PUT("/profile", internal.UpdateProfile(db))
+			}
+
+			// Admin routes (require admin authentication)
+			admin := api.Group("/sidigi")
+			admin.Use(internal.JWTAuth(db))         // Require authentication
+			admin.Use(internal.AdminMiddleware(db)) // Require admin role
+			{
+				// Dashboard
+				admin.GET("/dashboard", internal.GetAdminDashboard(db))
+
+				// User management
+				admin.GET("/users", internal.GetAdminUsers(db))
+				admin.PUT("/users/:id", internal.UpdateUser(db))
+				admin.DELETE("/users/:id", internal.DeleteUser(db))
+
+				// Blog management
+				admin.GET("/blog", internal.GetAdminBlogPosts(db))
+				admin.POST("/blog", internal.CreateBlogPost(db))
+				admin.PUT("/blog/:id", internal.UpdateBlogPost(db))
+				admin.DELETE("/blog/:id", internal.DeleteBlogPost(db))
+
+				// Prompt management
+				admin.GET("/prompts", internal.GetAdminPrompts(db))
+				admin.POST("/prompts", internal.CreatePrompt(db))
+				admin.PUT("/prompts/:id", internal.UpdatePrompt(db))
+				admin.DELETE("/prompts/:id", internal.DeletePrompt(db))
 			}
 		}
 	}

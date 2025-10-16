@@ -12,7 +12,8 @@ import (
 )
 
 type AuthRequest struct {
-	Email    string `json:"email" binding:"required,email"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
@@ -25,6 +26,7 @@ type UserInfo struct {
 	ID    uint   `json:"id"`
 	Email string `json:"email"`
 	Plan  string `json:"plan"`
+	Role  string `json:"role"`
 }
 
 // Signup creates a new user account
@@ -88,6 +90,7 @@ func Signup(db *gorm.DB) gin.HandlerFunc {
 			ID:    user.ID,
 			Email: user.Email,
 			Plan:  user.Plan,
+			Role:  user.Role,
 		}
 
 		c.JSON(http.StatusCreated, AuthResponse{
@@ -121,6 +124,7 @@ func GetProfile(db *gorm.DB) gin.HandlerFunc {
 			ID:    user.ID,
 			Email: user.Email,
 			Plan:  user.Plan,
+			Role:  user.Role,
 		}
 
 		c.JSON(http.StatusOK, userInfo)
@@ -193,9 +197,24 @@ func Login(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Find user
+		// Validate that either email or username is provided
+		if req.Email == "" && req.Username == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email or username is required"})
+			return
+		}
+
+		// Find user by email or username
 		var user User
-		if err := db.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		var err error
+		if req.Username != "" {
+			// Try to find by username (stored in email field for admin)
+			err = db.Where("email = ?", req.Username).First(&user).Error
+		} else {
+			// Find by email
+			err = db.Where("email = ?", req.Email).First(&user).Error
+		}
+
+		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
@@ -227,6 +246,7 @@ func Login(db *gorm.DB) gin.HandlerFunc {
 			ID:    user.ID,
 			Email: user.Email,
 			Plan:  user.Plan,
+			Role:  user.Role,
 		}
 
 		c.JSON(http.StatusOK, AuthResponse{

@@ -1,11 +1,13 @@
 import { Outlet, Link } from "react-router-dom"
 import { useState, useEffect } from "react"
+import { useAuth } from "./hooks/useAuth"
 import FeedbackModal from "./components/FeedbackModal"
 import { useFeedback } from "./hooks/useFeedback"
 
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { user, logout } = useAuth()
+  const isAuthenticated = !!user
   
   const {
     isModalOpen,
@@ -14,12 +16,6 @@ export default function App() {
     triggerOnPageLeave,
     triggerFeedbackCheck
   } = useFeedback()
-
-  useEffect(() => {
-    // Check if user is authenticated
-    const token = localStorage.getItem('token')
-    setIsAuthenticated(!!token)
-  }, [])
 
   // Handle page leave for feedback trigger
   useEffect(() => {
@@ -50,12 +46,6 @@ export default function App() {
       delete (window as any).triggerFeedback
     }
   }, [triggerOnPageLeave, triggerFeedbackCheck])
-
-  const logout = () => {
-    localStorage.removeItem('token')
-    setIsAuthenticated(false)
-    window.location.href = '/'
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900">
@@ -89,6 +79,9 @@ export default function App() {
                 <Link to="/dashboard" className="hover:text-brand transition-colors">Dashboard</Link>
                 <Link to="/history" className="hover:text-brand transition-colors">History</Link>
                 <Link to="/profile" className="hover:text-brand transition-colors">Profile</Link>
+                {user?.role === 'admin' && (
+                  <Link to="/sidigi" className="hover:text-brand transition-colors font-medium">Admin</Link>
+                )}
                 <button 
                   onClick={logout}
                   className="hover:text-brand transition-colors"
@@ -176,6 +169,16 @@ export default function App() {
                   >
                     Profile
                   </Link>
+                  {user?.role === 'admin' && (
+                    <Link 
+                      to="/sidigi" 
+                      className="block text-slate-700 hover:text-brand font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20 focus:ring-offset-2 rounded-md px-2 py-1"
+                      onClick={() => setMobileMenuOpen(false)}
+                      role="menuitem"
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       logout()

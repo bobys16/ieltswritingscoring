@@ -33,7 +33,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser({
           id: userData.id,
           email: userData.email,
-          name: userData.email.split('@')[0] // Use email prefix as name
+          name: userData.email.split('@')[0], // Use email prefix as name
+          role: userData.role
         })
       } else {
         localStorage.removeItem('token')
@@ -46,13 +47,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  async function login(email: string, password: string) {
+  async function login(emailOrUsername: string, password: string) {
+    // Determine if the input is an email or username
+    const isEmail = emailOrUsername.includes('@')
+    const requestBody = isEmail 
+      ? { email: emailOrUsername, password }
+      : { username: emailOrUsername, password } // Use username field for non-email inputs
+    
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
@@ -65,7 +72,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser({
       id: data.user.id,
       email: data.user.email,
-      name: data.user.email.split('@')[0] // Use email prefix as name since backend doesn't provide name
+      name: data.user.email.split('@')[0], // Use email prefix as name since backend doesn't provide name
+      role: data.user.role
     })
   }
 
@@ -88,7 +96,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser({
       id: data.user.id,
       email: data.user.email,
-      name: data.user.email.split('@')[0] // Use email prefix as name since backend doesn't provide name
+      name: data.user.email.split('@')[0], // Use email prefix as name since backend doesn't provide name
+      role: data.user.role
     })
   }
 

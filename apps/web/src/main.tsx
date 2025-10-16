@@ -15,8 +15,14 @@ import Profile from './pages/Profile.tsx'
 import ReportPublic from './pages/ReportPublic.tsx'
 import Blog from './pages/Blog.tsx'
 import BlogPost from './pages/BlogPost.tsx'
+import AdminLogin from './pages/AdminLogin.tsx'
+import AdminDashboard from './pages/AdminDashboard.tsx'
+import AdminUsers from './pages/AdminUsers.tsx'
+import AdminBlog from './pages/AdminBlog.tsx'
+import AdminPrompts from './pages/AdminPrompts.tsx'
 import { AuthProvider } from './components/AuthProvider.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import AdminProtectedRoute from './components/AdminProtectedRoute.tsx'
 
 const router = createBrowserRouter([
   {
@@ -33,6 +39,12 @@ const router = createBrowserRouter([
       { path: "r/:publicId", element: <ReportPublic /> },
       { path: "blog", element: <Blog /> },
       { path: "blog/:id", element: <BlogPost /> },
+      // Admin routes
+      { path: "sidigi/login", element: <AdminLogin /> },
+      { path: "sidigi", element: <AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute> },
+      { path: "sidigi/users", element: <AdminProtectedRoute><AdminUsers /></AdminProtectedRoute> },
+      { path: "sidigi/blog", element: <AdminProtectedRoute><AdminBlog /></AdminProtectedRoute> },
+      { path: "sidigi/prompts", element: <AdminProtectedRoute><AdminPrompts /></AdminProtectedRoute> },
     ]
   }
 ])

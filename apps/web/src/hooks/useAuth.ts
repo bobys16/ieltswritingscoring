@@ -4,11 +4,12 @@ interface User {
   id: number
   email: string
   name?: string
+  role?: string
 }
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string) => Promise<void>
+  login: (emailOrUsername: string, password: string) => Promise<void>
   signup: (email: string, password: string, name?: string) => Promise<void>
   logout: () => void
   loading: boolean
