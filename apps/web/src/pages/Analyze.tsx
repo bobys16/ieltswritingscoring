@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import analytics from '../utils/analytics'
 import { useFeedback } from '../hooks/useFeedback'
+import { apiConfig } from '../utils/api'
 
 export default function Analyze() {
   const [text, setText] = useState("")
@@ -45,7 +46,7 @@ export default function Analyze() {
         headers.Authorization = `Bearer ${token}`
       }
 
-      const res = await fetch("/api/essays/analyze", {
+      const res = await apiConfig.fetch("api/essays/analyze", {
         method: "POST", 
         headers, 
         body: JSON.stringify({ text, taskType })

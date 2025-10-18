@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { apiConfig } from '../utils/api'
 
 interface AdminDashboardStats {
   totalUsers: number
@@ -32,7 +33,7 @@ export default function AdminDashboard() {
         return
       }
 
-      const response = await fetch('/api/sidigi/dashboard', {
+      const response = await apiConfig.fetch('api/sidigi/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

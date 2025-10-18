@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiConfig } from '../utils/api'
 
 interface User {
   id: number
@@ -47,7 +48,7 @@ export default function AdminUsers() {
       if (search) params.append('search', search)
       if (roleFilter) params.append('role', roleFilter)
 
-      const response = await fetch(`/api/sidigi/users?${params}`, {
+      const response = await apiConfig.fetch(`api/sidigi/users?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -74,7 +75,7 @@ export default function AdminUsers() {
   const updateUser = async (userId: number, updates: { plan?: string; role?: string }) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/sidigi/users/${userId}`, {
+      const response = await apiConfig.fetch(`api/sidigi/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -100,7 +101,7 @@ export default function AdminUsers() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/sidigi/users/${userId}`, {
+      const response = await apiConfig.fetch(`api/sidigi/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

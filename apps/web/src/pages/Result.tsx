@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts"
 import analytics from '../utils/analytics'
 import { useFeedback } from '../hooks/useFeedback'
+import { apiConfig } from '../utils/api'
 
 export default function Result() {
   const { state } = useLocation() as any
@@ -29,7 +30,7 @@ export default function Result() {
         setLoading(true)
         setError(null)
         try {
-          const response = await fetch(`/api/reports/${id}`)
+          const response = await apiConfig.fetch(`api/reports/${id}`)
           if (!response.ok) {
             throw new Error('Report not found')
           }
@@ -108,7 +109,7 @@ export default function Result() {
     })
     
     try {
-      const response = await fetch(`/api/reports/${data.publicId || id}/pdf`)
+      const response = await apiConfig.fetch(`api/reports/${data.publicId || id}/pdf`)
       if (!response.ok) throw new Error('Failed to generate PDF')
       
       const blob = await response.blob()

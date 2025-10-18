@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode } from 'react'
-import { AuthContext, User } from '../hooks/useAuth'
+import { User, AuthContext } from '../hooks/useAuth'
+import { apiConfig } from '../utils/api'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -22,11 +23,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function fetchUserProfile() {
     try {
-      const response = await fetch('/api/auth/profile', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
+      const response = await apiConfig.fetch('api/auth/profile')
       
       if (response.ok) {
         const userData = await response.json()
@@ -54,11 +51,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       ? { email: emailOrUsername, password }
       : { username: emailOrUsername, password } // Use username field for non-email inputs
     
-    const response = await fetch('/api/auth/login', {
+    const response = await apiConfig.fetch('api/auth/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(requestBody),
     })
 
@@ -78,11 +72,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function signup(email: string, password: string, name?: string) {
-    const response = await fetch('/api/auth/signup', {
+    const response = await apiConfig.fetch('api/auth/signup', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ email, password, name }),
     })
 

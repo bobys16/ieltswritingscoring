@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiConfig } from '../utils/api'
 
 interface BlogPost {
   id: number
@@ -57,7 +58,7 @@ export default function AdminBlog() {
         return
       }
 
-      const response = await fetch('/api/sidigi/blog', {
+      const response = await apiConfig.fetch('api/sidigi/blog', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -103,7 +104,7 @@ export default function AdminBlog() {
     }
 
     try {
-      const response = await fetch(url, {
+      const response = await apiConfig.fetch(url.replace(apiConfig.baseURL, ''), {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -156,7 +157,7 @@ export default function AdminBlog() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/sidigi/blog/${postId}`, {
+      const response = await apiConfig.fetch(`api/sidigi/blog/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

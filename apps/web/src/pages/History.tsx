@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiConfig } from '../utils/api'
 import analytics from '../utils/analytics'
 
 interface EssayHistory {
@@ -39,7 +40,7 @@ export default function History() {
         return
       }
 
-      const response = await fetch('/api/user/history', {
+      const response = await apiConfig.fetch('api/user/history', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -68,7 +69,7 @@ export default function History() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/user/essays/${essayId}`, {
+      const response = await apiConfig.fetch(`api/user/essays/${essayId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

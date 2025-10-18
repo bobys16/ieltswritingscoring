@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
+import { apiConfig } from '../utils/api'
 
 export default function ReportPublic() {
   const { publicId } = useParams()
@@ -10,7 +11,7 @@ export default function ReportPublic() {
   useEffect(() => {
     async function fetchReport() {
       try {
-        const res = await fetch(`/api/reports/${publicId}`)
+        const res = await apiConfig.fetch(`api/reports/${publicId}`)
         if (res.ok) {
           const reportData = await res.json()
           setData(reportData)

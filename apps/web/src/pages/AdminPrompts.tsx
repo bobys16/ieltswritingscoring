@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiConfig } from '../utils/api'
 
 interface AdminPrompt {
   id: number
@@ -47,7 +48,7 @@ export default function AdminPrompts() {
         return
       }
 
-      const response = await fetch('/api/sidigi/prompts', {
+      const response = await apiConfig.fetch('api/sidigi/prompts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -78,7 +79,7 @@ export default function AdminPrompts() {
     const method = editingPrompt ? 'PUT' : 'POST'
 
     try {
-      const response = await fetch(url, {
+      const response = await apiConfig.fetch(url.replace(apiConfig.baseURL, ''), {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -125,7 +126,7 @@ export default function AdminPrompts() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/sidigi/prompts/${promptId}`, {
+      const response = await apiConfig.fetch(`api/sidigi/prompts/${promptId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

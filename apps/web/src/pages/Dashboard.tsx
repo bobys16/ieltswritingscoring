@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiConfig } from '../utils/api'
 
 interface EssayHistory {
   id: number
@@ -54,7 +55,7 @@ export default function Dashboard() {
         return
       }
 
-      const response = await fetch('/api/user/dashboard', {
+      const response = await apiConfig.fetch('api/user/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -79,7 +80,7 @@ export default function Dashboard() {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch('/api/user/history', {
+      const response = await apiConfig.fetch('api/user/history', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

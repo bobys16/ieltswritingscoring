@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import analytics from '../utils/analytics'
+import { apiConfig } from '../utils/api'
 
 interface UserProfile {
   id: number
@@ -37,7 +38,7 @@ export default function Profile() {
         return
       }
 
-      const response = await fetch('/api/auth/profile', {
+      const response = await apiConfig.fetch('api/auth/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -97,7 +98,7 @@ export default function Profile() {
         return
       }
 
-      const response = await fetch('/api/user/profile', {
+      const response = await apiConfig.fetch('api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +142,7 @@ export default function Profile() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('/api/user/profile', {
+      const response = await apiConfig.fetch('api/user/profile', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
