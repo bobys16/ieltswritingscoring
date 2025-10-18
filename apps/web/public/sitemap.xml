@@ -1,27 +1,51 @@
-export default function Sitemap() {
-  const routes = [
-    { url: '/', priority: 1.0, changefreq: 'daily' },
-    { url: '/analyze', priority: 0.9, changefreq: 'daily' },
-    { url: '/login', priority: 0.6, changefreq: 'monthly' },
-    { url: '/dashboard', priority: 0.7, changefreq: 'weekly' },
-    { url: '/help', priority: 0.5, changefreq: 'monthly' },
-    { url: '/contact', priority: 0.5, changefreq: 'monthly' },
-    { url: '/privacy', priority: 0.3, changefreq: 'yearly' },
-    { url: '/terms', priority: 0.3, changefreq: 'yearly' },
-  ]
-
-  const baseUrl = 'https://ielts-band-estimator.com'
-  const currentDate = new Date().toISOString().split('T')[0]
-
-  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes.map(route => `  <url>
-    <loc>${baseUrl}${route.url}</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>${route.changefreq}</changefreq>
-    <priority>${route.priority}</priority>
-  </url>`).join('\n')}
-</urlset>`
-
-  return sitemapXml
-}
+  <url>
+    <loc>https://bandlyapp.com/</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://bandlyapp.com/analyze</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://bandlyapp.com/login</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://bandlyapp.com/dashboard</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bandlyapp.com/help</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://bandlyapp.com/contact</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://bandlyapp.com/privacy</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://bandlyapp.com/terms</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

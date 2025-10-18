@@ -45,17 +45,19 @@ export default function AdminLogin() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-slate-700 mb-2">
                 Username
               </label>
               <input
                 id="username"
+                name="username"
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none transition-colors"
                 placeholder="Enter admin username"
               />
@@ -67,10 +69,12 @@ export default function AdminLogin() {
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none transition-colors"
                 placeholder="Enter admin password"
               />

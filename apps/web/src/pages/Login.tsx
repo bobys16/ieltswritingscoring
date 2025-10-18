@@ -90,33 +90,51 @@ export default function Login() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
                 Email Address
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none transition-colors"
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-                Password
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                  Password
+                </label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    className="text-xs text-brand hover:text-brand/80"
+                    onClick={() => {
+                      // TODO: Implement forgot password functionality
+                      alert('Forgot password feature coming soon!')
+                    }}
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <input
                 id="password"
+                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                autoComplete={isLogin ? "current-password" : "new-password"}
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none transition-colors"
                 placeholder="Enter your password"
               />
@@ -164,6 +182,20 @@ export default function Login() {
                 {isLogin ? 'Sign up' : 'Sign in'}
               </button>
             </p>
+            
+            {/* Terms and Privacy for Sign Up */}
+            {!isLogin && (
+              <p className="text-xs text-slate-500 mt-3">
+                By creating an account, you agree to our{' '}
+                <a href="/terms" className="text-brand hover:text-brand/80" target="_blank" rel="noopener noreferrer">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" className="text-brand hover:text-brand/80" target="_blank" rel="noopener noreferrer">
+                  Privacy Policy
+                </a>
+              </p>
+            )}
           </div>
 
           {/* Benefits for signup */}
