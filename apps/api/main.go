@@ -47,6 +47,11 @@ func main() {
 		log.Println("Redis connected successfully")
 	}
 
+	// Start blog generation cronjob
+	if db != nil {
+		go internal.StartBlogGenerationCron(db)
+	}
+
 	// Initialize Gin router
 	r := gin.Default()
 
@@ -58,6 +63,10 @@ func main() {
 		status := gin.H{"ok": true, "database": db != nil, "redis": rdb != nil}
 		c.JSON(200, status)
 	})
+
+	// SEO routes
+	r.GET("/sitemap.xml", internal.GenerateSitemap(db))
+	r.GET("/sitemap_index.xml", internal.GenerateSitemapIndex(db))
 
 	// API routes
 	api := r.Group("/api")
@@ -96,6 +105,15 @@ func main() {
 
 		// Feedback (with optional auth)
 		api.POST("/feedback", internal.OptionalAuth(db), internal.SubmitFeedback(db))
+
+		// Public blog endpoints
+		if db != nil {
+			blog := api.Group("/blog")
+			{
+				blog.GET("", internal.GetPublicBlogPosts(db))
+				blog.GET("/:slug", internal.GetBlogPostBySlug(db))
+			}
+		}
 
 		// Protected user routes (require authentication)
 		if db != nil {

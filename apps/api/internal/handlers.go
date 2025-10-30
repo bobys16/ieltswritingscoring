@@ -181,3 +181,30 @@ func SubmitFeedback(db *gorm.DB) gin.HandlerFunc {
 		})
 	}
 }
+
+// GetPublicBlogPosts returns published blog posts for public display
+func GetPublicBlogPosts(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var posts []BlogPost
+		db.Where("is_published = ?", true).
+			Order("published_at DESC, created_at DESC").
+			Find(&posts)
+
+		c.JSON(http.StatusOK, gin.H{"posts": posts})
+	}
+}
+
+// GetBlogPostBySlug returns a single blog post by slug
+func GetBlogPostBySlug(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		slug := c.Param("slug")
+		var post BlogPost
+
+		if err := db.Where("slug = ? AND is_published = ?", slug, true).First(&post).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "blog post not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"post": post})
+	}
+}

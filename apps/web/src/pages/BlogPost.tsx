@@ -1,226 +1,111 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import analytics from '../utils/analytics'
+import apiConfig from '../utils/api'
 
 interface BlogPost {
-  id: string
+  id: number
   title: string
   content: string
   readTime: string
   publishedAt: string
   category: string
   tags: string[]
+  slug: string
+  excerpt: string
+  isPublished: boolean
 }
-
-// Static blog posts (same as Blog.tsx)
-const blogPosts: BlogPost[] = [
-  {
-    id: 'ielts-band-7-vs-8-differences',
-    title: 'IELTS Band 7 vs Band 8: What Makes the Difference?',
-    content: `Getting from Band 7 to Band 8 in IELTS Writing requires understanding the subtle but crucial differences that examiners look for.
-
-## Task Achievement (TA)
-
-**Band 7:** Addresses all parts of the task with well-developed ideas and clear position.
-**Band 8:** Addresses all parts of the task with well-developed, relevant ideas that are extended and supported.
-
-Key difference: Band 8 requires more sophisticated idea development and stronger supporting evidence.
-
-## Coherence and Cohesion (CC)
-
-**Band 7:** Logically organizes information with clear progression and variety of cohesive devices.
-**Band 8:** Sequences information logically with wide range of cohesive devices used naturally.
-
-Key difference: Band 8 writing flows more naturally with seamless transitions.
-
-## Lexical Resource (LR)
-
-**Band 7:** Uses sufficient range of vocabulary with some flexibility and style awareness.
-**Band 8:** Uses wide range of vocabulary naturally and flexibly with precise meanings.
-
-Key difference: Band 8 vocabulary is more precise and sophisticated.
-
-## Grammatical Range and Accuracy (GRA)
-
-**Band 7:** Uses variety of complex structures with good control and frequent error-free sentences.
-**Band 8:** Uses wide range of structures with flexibility and accuracy, with only occasional errors.
-
-Key difference: Band 8 has fewer errors and more varied sentence structures.
-
-## Practical Tips for Band 8
-
-1. **Develop ideas more deeply** - Don't just state opinions, explain the reasoning behind them
-2. **Use more sophisticated vocabulary** - Choose precise words over general ones
-3. **Vary sentence structure** - Mix simple, compound, and complex sentences naturally
-4. **Perfect your transitions** - Use a wider range of linking words and phrases
-5. **Proofread carefully** - Band 8 allows very few grammatical errors
-
-Practice analyzing Band 8 sample essays to understand the level of sophistication required.`,
-    readTime: '5 min read',
-    publishedAt: '2025-10-15',
-    category: 'Tips',
-    tags: ['band-improvement', 'scoring', 'writing-tips']
-  },
-  {
-    id: 'task-1-vs-task-2-strategies',
-    title: 'IELTS Task 1 vs Task 2: Different Strategies for Success',
-    content: `IELTS Writing includes two very different tasks that require distinct approaches and strategies.
-
-## Task 1: Academic Writing
-
-**Purpose:** Describe, summarize or explain information presented in graphs, charts, tables or diagrams.
-
-**Key Strategies:**
-- **Overview first:** Always include a clear overview paragraph highlighting main trends
-- **Data selection:** Choose the most significant data points, not every detail
-- **Comparison:** Compare and contrast different categories or time periods
-- **Accurate language:** Use precise vocabulary for describing trends and data
-
-**Common Mistakes:**
-- Giving opinions or explanations for the data
-- Including too much detail
-- Missing the overview
-- Inaccurate data reporting
-
-## Task 2: Essay Writing
-
-**Purpose:** Present an argument, discussion, or solution to a given problem or statement.
-
-**Key Strategies:**
-- **Clear position:** State your opinion clearly in the introduction
-- **Strong arguments:** Develop 2-3 main points with examples and evidence
-- **Balanced discussion:** Consider different perspectives where required
-- **Logical structure:** Use clear paragraph structure with topic sentences
-
-**Common Mistakes:**
-- Unclear or changing position
-- Weak or irrelevant examples
-- Poor paragraph structure
-- Not addressing all parts of the question
-
-## Time Management
-
-**Task 1:** 20 minutes (150 words minimum)
-- 5 minutes: Analyze the visual and plan
-- 12 minutes: Write
-- 3 minutes: Review and check
-
-**Task 2:** 40 minutes (250 words minimum)
-- 10 minutes: Plan your essay structure
-- 25 minutes: Write
-- 5 minutes: Review and edit
-
-## Practice Tips
-
-1. **Task 1:** Practice describing different chart types (line, bar, pie, tables)
-2. **Task 2:** Practice different question types (opinion, discussion, problem-solution)
-3. Use our AI analyzer to get instant feedback on both task types
-4. Focus on your weaker task type for improvement
-
-Remember: Task 2 is worth twice as much as Task 1 in your overall Writing score.`,
-    readTime: '6 min read',
-    publishedAt: '2025-10-14',
-    category: 'Strategy',
-    tags: ['task-1', 'task-2', 'writing-strategy', 'time-management']
-  },
-  {
-    id: 'free-ielts-band-calculator-guide',
-    title: 'Free IELTS Band Calculator: How Our AI Analysis Works',
-    content: `Our free IELTS band calculator uses advanced AI technology to analyze your writing and provide accurate band predictions.
-
-## How Our AI Analysis Works
-
-### 1. Multi-Criteria Assessment
-Our AI examiner evaluates your essay across all four official IELTS criteria:
-- **Task Achievement (TA):** How well you address the task requirements
-- **Coherence and Cohesion (CC):** Organization and flow of ideas
-- **Lexical Resource (LR):** Vocabulary range and accuracy
-- **Grammatical Range and Accuracy (GRA):** Grammar variety and correctness
-
-### 2. Machine Learning Training
-Our AI has been trained on thousands of IELTS essays with verified band scores from certified examiners, achieving 95% accuracy compared to human scoring.
-
-### 3. Natural Language Processing
-Advanced NLP algorithms analyze:
-- Sentence complexity and variety
-- Vocabulary sophistication and accuracy
-- Coherence patterns and transitions
-- Grammar structures and error frequency
-
-## Features of Our Band Calculator
-
-### Instant Analysis
-- Get your band scores in under 60 seconds
-- No registration required for basic analysis
-- Support for both Task 1 and Task 2 essays
-
-### Detailed Feedback
-- Specific suggestions for improvement
-- Identification of strengths and weaknesses
-- CEFR level mapping (A1-C2)
-
-### Professional Reports
-- Downloadable PDF reports
-- Shareable results with unique links
-- Progress tracking for registered users
-
-## Why Use Our Calculator?
-
-### 1. Save Time and Money
-- No need to wait weeks for official results
-- Avoid expensive tutoring for initial assessment
-- Practice unlimited times for free
-
-### 2. Accurate Predictions
-- 95% correlation with official IELTS scores
-- Continuous model improvement
-- Based on official scoring criteria
-
-### 3. Actionable Feedback
-- Specific areas for improvement
-- Example corrections and suggestions
-- Progress tracking over time
-
-## Getting Started
-
-1. **Paste your essay** into our analyzer
-2. **Select task type** (Task 1 or Task 2)
-3. **Click analyze** to get instant results
-4. **Review feedback** and improvement suggestions
-5. **Download your report** for future reference
-
-## Tips for Best Results
-
-- Ensure your essay is 150-320 words
-- Use proper paragraph structure
-- Include introduction and conclusion
-- Proofread before submitting
-
-Try our free IELTS band calculator now and start improving your writing today!`,
-    readTime: '4 min read',
-    publishedAt: '2025-10-13',
-    category: 'Guide',
-    tags: ['band-calculator', 'ai-analysis', 'free-tools', 'getting-started']
-  }
-]
 
 export default function BlogPost() {
   const { id } = useParams<{ id: string }>()
-  const post = blogPosts.find(p => p.id === id)
+  const [post, setPost] = useState<BlogPost | null>(null)
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
+  // Fetch blog post by slug
   useEffect(() => {
-    if (post) {
-      analytics.trackPageView(`/blog/${post.id}`)
-      analytics.trackFunnelStep('blog_post_view', { postId: post.id, title: post.title })
+    const fetchBlogPost = async () => {
+      try {
+        setLoading(true)
+        // Try to fetch by slug (id parameter contains the slug)
+        const response = await apiConfig.fetch(`/blog/${id}`)
+        
+        if (!response.ok) {
+          throw new Error('Blog post not found')
+        }
+        
+        const data = await response.json()
+        const blogPost = data.post
+        
+        // Parse tags
+        let tags: string[] = []
+        if (blogPost.tags) {
+          if (typeof blogPost.tags === 'string') {
+            tags = blogPost.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag)
+          } else if (Array.isArray(blogPost.tags)) {
+            tags = blogPost.tags
+          }
+        }
+        
+        const parsedPost: BlogPost = {
+          ...blogPost,
+          tags: tags
+        }
+        
+        setPost(parsedPost)
+        setError(null)
+        
+        // Track analytics
+        analytics.trackPageView(`/blog/${blogPost.slug}`)
+        analytics.trackFunnelStep('blog_post_view', { postId: blogPost.id, title: blogPost.title })
+        
+        // Fetch related posts (same category)
+        const allPostsResponse = await apiConfig.fetch('/blog')
+        if (allPostsResponse.ok) {
+          const allPostsData = await allPostsResponse.json()
+          const allPosts = (allPostsData.posts || []).map((p: any) => ({
+            ...p,
+            tags: p.tags ? (typeof p.tags === 'string' ? p.tags.split(',').map((t: string) => t.trim()) : p.tags) : []
+          }))
+          
+          const related = allPosts
+            .filter((p: BlogPost) => p.id !== blogPost.id && p.category === blogPost.category)
+            .slice(0, 2)
+          
+          setRelatedPosts(related)
+        }
+      } catch (err) {
+        console.error('Failed to fetch blog post:', err)
+        setError('Failed to load blog post')
+        setPost(null)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [post])
 
-  if (!post) {
+    if (id) {
+      fetchBlogPost()
+    }
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading blog post...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !post) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Post Not Found</h1>
-          <p className="text-slate-600 mb-4">The blog post you're looking for doesn't exist.</p>
+          <p className="text-slate-600 mb-4">{error || "The blog post you're looking for doesn't exist."}</p>
           <Link to="/blog" className="text-brand hover:text-brand/80 font-medium">
             ← Back to Blog
           </Link>
@@ -230,11 +115,15 @@ export default function BlogPost() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    } catch {
+      return dateString
+    }
   }
 
   const renderContent = (content: string) => {
@@ -341,13 +230,11 @@ export default function BlogPost() {
           <div className="mt-12">
             <h3 className="text-2xl font-bold text-slate-900 mb-6">Related Articles</h3>
             <div className="grid md:grid-cols-2 gap-6">
-              {blogPosts
-                .filter(p => p.id !== post.id)
-                .slice(0, 2)
-                .map(relatedPost => (
+              {relatedPosts.length > 0 ? (
+                relatedPosts.map((relatedPost: BlogPost) => (
                   <Link
                     key={relatedPost.id}
-                    to={`/blog/${relatedPost.id}`}
+                    to={`/blog/${relatedPost.slug}`}
                     className="block bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-lg transition-shadow"
                     onClick={() => analytics.trackFunnelStep('blog_related_click', { fromPost: post.id, toPost: relatedPost.id })}
                   >
@@ -359,10 +246,13 @@ export default function BlogPost() {
                     </div>
                     <h4 className="font-semibold text-slate-900 mb-2">{relatedPost.title}</h4>
                     <p className="text-sm text-slate-600">
-                      {relatedPost.content.split('\n')[0].substring(0, 120)}...
+                      {relatedPost.excerpt.substring(0, 120)}...
                     </p>
                   </Link>
-                ))}
+                ))
+              ) : (
+                <p className="text-slate-600 col-span-full">No related articles found.</p>
+              )}
             </div>
           </div>
         </div>

@@ -245,7 +245,7 @@ func DeleteUser(db *gorm.DB) gin.HandlerFunc {
 func GetAdminBlogPosts(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var posts []BlogPost
-		db.Order("created_at DESC").Find(&posts)
+		db.Order("published_at DESC, created_at DESC").Find(&posts)
 
 		c.JSON(http.StatusOK, gin.H{"posts": posts})
 	}
